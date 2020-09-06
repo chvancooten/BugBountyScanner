@@ -47,5 +47,6 @@ root@yourhost:~/bugbounty# ./BugBountyAutomator.sh target.com
 ## To-do
 - [ ] Automatically install all requirements
 - [ ] Implement basic multi-domain support
+- [ ] Integrate with BurpSuite proxy / active scan
 - [ ] Implement additional vulnerability checks (please reach out if you have any suggestions!)
 - [ ] Optimize nmap scans
