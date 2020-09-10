@@ -25,6 +25,7 @@ root@yourhost:~/bugbounty# ./BugBountyAutomator.sh target.com
 
 ### Requirements installed by script
 
+- `gau`
 - `gospider`
 - `httpx`
 - `qsreplace`
@@ -37,16 +38,21 @@ root@yourhost:~/bugbounty# ./BugBountyAutomator.sh target.com
 - Telegram status notifications
 - Subdomain enumeration and live webserver detection
 - Web screenshotting and spidering
+- Retrieving (hopefully sensitive) endpoints from the Wayback Machine
 - Subdomain hijacking detection
 - Basic SQL injection detection
 - Detection of .git folders
 - Detection of Telerik endpoints (often vulnerable 😁)
 - Port scanning (Top 1000 TCP + SNMP)
 
-
 ## To-do
+
 - [ ] Automatically install all requirements
-- [ ] Implement basic multi-domain support
-- [ ] Integrate with BurpSuite proxy / active scan
 - [ ] Implement additional vulnerability checks (please reach out if you have any suggestions!)
+    - [ ] Implement Nuclei for automatic checks
 - [ ] Optimize nmap scans
+
+- [x] Implement basic multi-domain support
+- [x] Integrate with BurpSuite proxy / active scan
+
+  - **Won't fix:** Would introduce too many dependencies and reduce ease of use. As a solution I have included a script that sends the crawled scope (or any list of endpoints)       through the burp proxy for manual passive/active crawling.
