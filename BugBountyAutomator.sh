@@ -29,9 +29,13 @@ else
     IFS=', ' read -r -a DOMAINS <<< "$1"
 fi
 
-read -r -p "[?] Perform thorough scan (not recommended for very big scopes)? [y/n]: " thoroughresponse
+read -r -p "[?] Perform quick scan (recon only)? [y/N]: " thoroughresponse
 case "$thoroughresponse" in
     [yY][eE][sS]|[yY]) 
+        thorough=false
+        ;;
+
+    *)
         thorough=true
         ;;
 esac
@@ -158,19 +162,19 @@ do
     ################################################
 
     if [ "$thorough" = true ] ; then
-        echo "[**] RUNNING NUCLEI..."
-        notify "(THOROUGH) Detecting known vulnerabilities with Nuclei..."
-        nuclei -c 75 -l "livedomains-$DOMAIN.txt" -t "$toolsDir"'/nuclei/nuclei-templates/' -severity low,medium,high -o "Nuclei-$DOMAIN.txt"
-        notify "(THOROUGH) Nuclei completed. Found *$(wc -l < "Nuclei-$DOMAIN.txt")* (potential) issues. Spidering paths with GoSpider..."
+        echo "[*] RUNNING NUCLEI..."
+        notify "Detecting known vulnerabilities with Nuclei..."
+        nuclei -c 75 -l "livedomains-$DOMAIN.txt" -t "$toolsDir"'/nuclei/nuclei-templates/' -severity low,medium,high -o "nuclei-$DOMAIN.txt"
+        notify "Nuclei completed. Found *$(wc -l < "nuclei-$DOMAIN.txt")* (potential) issues. Spidering paths with GoSpider..."
 
-        echo "[**] RUNNING GOSPIDER..."
+        echo "**] RUNNING GOSPIDER..."
         gospider -S "livedomains-$DOMAIN.txt" -o GoSpider -t 2 -c 5 -d 3 --blacklist jpg,jpeg,gif,css,tif,tiff,png,ttf,woff,woff2,ico,svg
         cat GoSpider/* | grep -o -E "(([a-zA-Z][a-zA-Z0-9+-.]*\:\/\/)|mailto|data\:)([a-zA-Z0-9\.\&\/\?\:@\+-\_=#%;,])*" | sort -u | qsreplace -a | grep "$DOMAIN" > "GoSpider-$DOMAIN.txt"
         rm -rf GoSpider
-        notify "(THOROUGH) GoSpider completed. Crawled *$(wc -l < "GoSpider-$DOMAIN.txt")* endpoints. Identifying interesting parameterized endpoints (from WaybackMachine and GoSpider) with GF..."
+        notify "GoSpider completed. Crawled *$(wc -l < "GoSpider-$DOMAIN.txt")* endpoints. Identifying interesting parameterized endpoints (from WaybackMachine and GoSpider) with GF..."
 
         # Merge GAU and GoSpider files into one big list of (hopefully) interesting paths
-        cat "WayBack-$DOMAIN.txt" "GoSpider-$DOMAIN.txt" | sort -u | qsreplace -a > "Paths-$DOMAIN.txt"
+        cat "WayBack-$DOMAIN.txt" "GoSpider-$DOMAIN.txt" | sort -u | qsreplace -a > "paths-$DOMAIN.txt"
         rm "WayBack-$DOMAIN.txt" "GoSpider-$DOMAIN.txt"
 
         ######### OBSOLETE, REPLACED BY GF / MANUAL #########
@@ -190,7 +194,7 @@ do
         # rm -rf sqli-vulnerable
         #####################################################
 
-        echo "[**] GETTING INTERESTING PARAMETERS WITH GF..."
+        echo "[*] GETTING INTERESTING PARAMETERS WITH GF..."
         mkdir "check-manually"
         gf ssrf < "Paths-$DOMAIN.txt" > "check-manually/server-side-request-forgery.txt"
         gf xss < "Paths-$DOMAIN.txt" > "check-manually/cross-site-scripting.txt"
@@ -201,25 +205,25 @@ do
         gf lfi < "Paths-$DOMAIN.txt" > "check-manually/local-file-inclusion.txt"
         gf ssti < "Paths-$DOMAIN.txt" > "check-manually/server-side-template-injection.txt"
         gf debug_logic < "Paths-$DOMAIN.txt" > "check-manually/debug-logic.txt"
-        notify "(THOROUGH) GF done! Identified *$(cat check-manually/* | wc -l)* interesting parameter endpoints to check. Resolving hostnames to IP addresses..."
+        notify "GF done! Identified *$(cat check-manually/* | wc -l)* interesting parameter endpoints to check. Resolving hostnames to IP addresses..."
 
-        echo "[**] Resolving IP addresses from hosts..."
+        echo "[*] Resolving IP addresses from hosts..."
         while read -r hostname; do
-            dig "$hostname" +short >> "ip-addresses-$DOMAIN.txt"
+            dig "$hostname" +short >> "dig.txt"
         done < "domains-$DOMAIN.txt"
-        sort -u -o "ip-addresses-$DOMAIN.txt" "ip-addresses-$DOMAIN.txt"
-        notify "(THOROUGH) Resolving done! Starting Nmap for *$(wc -l < "ip-addresses-$DOMAIN.txt")* IP addresses..."
+        grep -o '[0-9]\{1,3\}\.[0-9]\{1,3\}\.[0-9]\{1,3\}\.[0-9]\{1,3\}' "dig.txt" | sort -u > "ip-addresses-$DOMAIN.txt" && rm "dig.txt"
+        notify "Resolving done! Starting Nmap for *$(wc -l < "ip-addresses-$DOMAIN.txt")* IP addresses..."
 
-        echo "[**] RUNNING NMAP (TOP 1000 TCP)..."
+        echo "[*] RUNNING NMAP (TOP 1000 TCP)..."
         mkdir nmap
         nmap -T4 --open --source-port 53 --max-retries 3 --host-timeout 15m -iL "ip-addresses-$DOMAIN.txt" -oA nmap/nmap-tcp
-        notify "(THOROUGH) Nmap TCP done! Identified *$(grep -c "Port" < "nmap/nmap-tcp.gnmap")* IPs with ports open. Starting Nmap UDP/SNMP scan for *$(wc -l < "nmap/tcpips.txt")* IP addresses..."   
+        notify "Nmap TCP done! Identified *$(grep -c "Port" < "nmap/nmap-tcp.gnmap")* IPs with ports open. Starting Nmap UDP/SNMP scan for *$(wc -l < "nmap/tcpips.txt")* IP addresses..."   
 
-        echo "[**] RUNNING NMAP (SNMP UDP)..."
+        echo "[*] RUNNING NMAP (SNMP UDP)..."
         grep Port < nmap/nmap-tcp.gnmap | cut -d' ' -f2 | sort -u > nmap/tcpips.txt
         nmap -T4 -sU -sV -p 161 --open --source-port 53 -iL nmap/tcpips.txt -oA nmap/nmap-161udp
         rm nmap/tcpips.txt
-        notify "(THOROUGH) Nmap TCP done! Identified *$(grep "Port" < "nmap/nmap-161udp.gnmap" | grep -cv "filtered")* IPS with SNMP port open." 
+        notify "Nmap TCP done! Identified *$(grep "Port" < "nmap/nmap-161udp.gnmap" | grep -cv "filtered")* IPS with SNMP port open." 
     fi
 
     cd ..
