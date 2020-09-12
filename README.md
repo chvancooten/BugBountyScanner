@@ -10,11 +10,10 @@ It's recommended to run BugBountyScanner from a server (VPS or home server), and
 The only required adaptation is including your API key for the [Telegram Bot API](https://core.telegram.org/bots/api) (or adapting the `notify` function to suit your notification needs). After that, all that is required is kicking off the script and forgetting all about it! Running the script takes anywhere in between several minutes (for very small scopes < 10 subdomains) and several days (for very large scopes > 20000 subdomains). A 'thorough mode' flag is present, which includes some time-consuming tasks such as port scanning and subdomain crawling.
 
 ```
-root@yourhost:~/bugbounty# ./BugBountyAutomator.sh target.com
-[?] Create subfolder (no will output files in current folder)? [y/n]: y
-[?] Perform thorough scan (not recommended for very big scopes)? [y/n]: y
+root@yourhost:~/bugbounty# ./BugBountyAutomator.sh target1.com,target2.com
+[?] Perform quick scan (recon only)? [y/N]: n
 [*] DEPENDENCIES FOUND. NOT INSTALLING.
-[*] Running recon on target.com!
+[*] Running recon on target1.com!
 ```
 
 ### Requirements
