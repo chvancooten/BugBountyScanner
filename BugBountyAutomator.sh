@@ -1,15 +1,16 @@
 #!/bin/bash
-## Simple Automated Bug Bounty recon script
+## Automated Bug Bounty recon script
 ## By Cas van Cooten
 
 ### CONFIG (NOTE! SECRETS INSIDE!)
 toolsDir='/root/toolkit'
-telegram_api_key='XXXXXXXXX:XXXXXXXXXXXXXXXXXXXXXXXXXXXX'
-telegram_chat_id='XXXXXXXXX'
+telegram_api_key='X'
+telegram_chat_id='X'
 ### END CONFIG
 
 baseDir=$(dirname "$(readlink -f "$0")")
 lastNotified=0
+thorough=true
 
 function notify {
     if [ $(($(date +%s) - lastNotified)) -le 3 ]; then
@@ -21,24 +22,42 @@ function notify {
     lastNotified=$(date +%s)
 }
 
-if [ -z "$1" ]
-then
-    read -r -p "[?] What's the target domain(s)? E.g. \"domain.com,domain2.com\". DOMAIN: " domainsresponse
-    IFS=', ' read -r -a DOMAINS <<< "$domainsresponse" 
-else
-    IFS=', ' read -r -a DOMAINS <<< "$1"
-fi
-
-read -r -p "[?] Perform quick scan (recon only)? [y/N]: " thoroughresponse
-case "$thoroughresponse" in
-    [yY][eE][sS]|[yY]) 
+for arg in "$@"
+do
+    case $arg in
+        -h|--help)
+        echo "BugBountyHunter - Automated Bug Bounty reconnaisance script"
+        echo " "
+        echo "$0 [options]"
+        echo " "
+        echo "options:"
+        echo "-h, --help                show brief help"
+        echo "-q, --quick               perform quick recon only (default: false)"
+        echo "-d, --domain <domain>     top domain to scan, can take multiple"
+        echo " "
+        echo "example:"
+        echo "$0 --quick -d google.com -d uber.com"
+        exit 0
+        ;;
+        -q|--quick)
         thorough=false
+        shift
         ;;
+        -d|--domain)
+        domainargs+=("$2")
+        shift
+        shift
+        ;;
+    esac
+done
 
-    *)
-        thorough=true
-        ;;
-esac
+if [ "${#domainargs[@]}" -ne 0 ]
+then
+    IFS=', ' read -r -a DOMAINS <<< "${domainargs[@]}"
+else
+    read -r -p "[?] What's the target domain(s)? E.g. \"domain.com,domain2.com\". DOMAIN: " domainsresponse
+    IFS=', ' read -r -a DOMAINS <<< "$domainsresponse"  
+fi
 
 if command -v subjack &> /dev/null # Very crude dependency check :D
 then
@@ -49,6 +68,7 @@ else
     apt update --assume-yes 
     apt install --assume-yes phantomjs
     apt install --assume-yes xvfb
+    apt install --assume-yes dnsutils
     pip install webscreenshot
 	
     echo "[*] Updating Golang.."
@@ -180,7 +200,7 @@ do
         ######### OBSOLETE, REPLACED BY GF / MANUAL #########
         # echo "[**] SEARCHING FOR POSSIBLE SQL INJECTIONS..."
         # notify "(THOROUGH) Searching for possible SQL injections..."
-        # grep "=" "Paths-$DOMAIN.txt" | sed '/^.\{255\}./d' | qsreplace "' OR '1" | httpx -silent -threads 25 -sr -srd sqli-vulnerable
+        # grep "=" "paths-$DOMAIN.txt" | sed '/^.\{255\}./d' | qsreplace "' OR '1" | httpx -silent -threads 25 -sr -srd sqli-vulnerable
         # grep -r -L -Z "syntax error\|mysql\|sql" sqli-vulnerable | xargs --null rm
         # if [ "$(find sqli-vulnerable/* -maxdepth 0 | wc -l)" -eq "0" ]; then
         #     notify "No possible SQL injections found."
@@ -196,15 +216,15 @@ do
 
         echo "[*] GETTING INTERESTING PARAMETERS WITH GF..."
         mkdir "check-manually"
-        gf ssrf < "Paths-$DOMAIN.txt" > "check-manually/server-side-request-forgery.txt"
-        gf xss < "Paths-$DOMAIN.txt" > "check-manually/cross-site-scripting.txt"
-        gf redirect < "Paths-$DOMAIN.txt" > "check-manually/open-redirect.txt"
-        gf rce < "Paths-$DOMAIN.txt" > "check-manually/rce.txt"
-        gf idor < "Paths-$DOMAIN.txt" > "check-manually/insecure-direct-object-reference.txt"
-        gf sqli < "Paths-$DOMAIN.txt" > "check-manually/sql-injection.txt"
-        gf lfi < "Paths-$DOMAIN.txt" > "check-manually/local-file-inclusion.txt"
-        gf ssti < "Paths-$DOMAIN.txt" > "check-manually/server-side-template-injection.txt"
-        gf debug_logic < "Paths-$DOMAIN.txt" > "check-manually/debug-logic.txt"
+        gf ssrf < "paths-$DOMAIN.txt" > "check-manually/server-side-request-forgery.txt"
+        gf xss < "paths-$DOMAIN.txt" > "check-manually/cross-site-scripting.txt"
+        gf redirect < "paths-$DOMAIN.txt" > "check-manually/open-redirect.txt"
+        gf rce < "paths-$DOMAIN.txt" > "check-manually/rce.txt"
+        gf idor < "paths-$DOMAIN.txt" > "check-manually/insecure-direct-object-reference.txt"
+        gf sqli < "paths-$DOMAIN.txt" > "check-manually/sql-injection.txt"
+        gf lfi < "paths-$DOMAIN.txt" > "check-manually/local-file-inclusion.txt"
+        gf ssti < "paths-$DOMAIN.txt" > "check-manually/server-side-template-injection.txt"
+        gf debug_logic < "paths-$DOMAIN.txt" > "check-manually/debug-logic.txt"
         notify "GF done! Identified *$(cat check-manually/* | wc -l)* interesting parameter endpoints to check. Resolving hostnames to IP addresses..."
 
         echo "[*] Resolving IP addresses from hosts..."
