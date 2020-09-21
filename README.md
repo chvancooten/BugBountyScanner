@@ -1,37 +1,73 @@
 # BugBountyScanner
+
 A simple Bash script for Bug Bounty reconnaissance, intended for headless use. Low on resources, high on information output.
 
-## How to use
+## Description
 
 > ⚠ Note: Using the script over a VPN is highly recommended.
 
-It's recommended to run BugBountyScanner from a server (VPS or home server), and _not_ from your terminal. It is programmed to be low on resources, with potentially multiple days of scanning in mind for bigger scopes. I created the script with the docker image [`hackersploit/bugbountytoolkit`](https://github.com/AlexisAhmed/BugBountyToolkit) in mind, if you use another setup please note the requirements below.
+It's recommended to run BugBountyScanner from a server (VPS or home server), and _not_ from your terminal. It is programmed to be low on resources, with potentially multiple days of scanning in mind for bigger scopes. The script functions on a stand-alone basis.
 
-The only required adaptation is including your API key for the [Telegram Bot API](https://core.telegram.org/bots/api) (or adapting the `notify` function to suit your notification needs). After that, all that is required is kicking off the script and forgetting all about it! Running the script takes anywhere in between several minutes (for very small scopes < 10 subdomains) and several days (for very large scopes > 20000 subdomains). A 'thorough mode' flag is present, which includes some time-consuming tasks such as port scanning and subdomain crawling.
+You can run the script either as a docker image or from your preferred Debian/Ubuntu system (see below). All that is required is kicking off the script and forgetting all about it! Running the script takes anywhere in between several minutes (for very small scopes < 10 subdomains) and several days (for very large scopes > 20000 subdomains). A 'thorough mode' flag is present, which includes some time-consuming tasks such as port scanning and subdomain crawling.
+
+## Installation
+
+### Docker
+
+Docker Hub Link: https://hub.docker.com/r/chvancooten/bugbountyscanner.
+
+You can pull the Docker image from Docker Hub as below.
 
 ```
-root@yourhost:~/bugbounty# ./BugBountyAutomator.sh -d target1.com -d target2.com [--quick]
-[*] DEPENDENCIES FOUND. NOT INSTALLING.
-[*] Running recon on target1.com!
+docker pull chvancooten/bugbountyscanner
+docker run -it chvancooten/bugbountyscanner /bin/bash
 ```
 
-### Requirements
+Docker-Compose can also be used.
 
-- `nmap`
-- `amass`
+```
+version: "3"
+services:
+  bugbountybox:
+    container_name: BugBountyBox
+    stdin_open: true
+    tty: true
+    image: chvancooten/bugbountyscanner:latest
+    environment:
+    - telegram_api_key='X'
+    - telegram_chat_id='X'
+    volumes:
+      - ${USERDIR}/docker/bugbountybox:/root/bugbounty
+    # VPN recommended :)
+    network_mode: service:your_vpn_container
+    depends_on:
+      - your_vpn_container
+```
 
-### Requirements installed by script
+Alternatively, you can build the image from source.
 
-- `dnsutils`
-- `Go`
-- `gau`
-- `Gf` (with `Gf-Patterns`)
-- `gospider`
-- `httpx`
-- `Nuclei` (with `Nuclei-Templates`)
-- `qsreplace`
-- `subjack`
-- `webscreenshot`
+```
+git clone https://github.com/chvancooten/BugBountyScanner.git
+cd BugBountyScanner
+docker build .
+```
+
+### Manual
+
+If you prefer running the script manually, you can do so.
+
+```
+git clone https://github.com/chvancooten/BugBountyScanner.git
+cd BugBountyScanner
+cp .env.example .env
+# Edit accordingly
+chmod +x BugBountyScanner.sh
+# Setup is automatically triggered, but can be manually run
+chmod +x setup.sh
+./setup.sh -t /custom/tools/dir
+./BugBountyScanner.sh --help
+./BugBountyScanner.sh -d target1.com -d target2.net -t /custom/tools/dir --quick
+```
 
 ## Features
 
@@ -39,18 +75,23 @@ root@yourhost:~/bugbounty# ./BugBountyAutomator.sh -d target1.com -d target2.com
 - Telegram status notifications
 - Extensive CVE and misconfiguration detection with Nuclei
 - Subdomain enumeration and live webserver detection
-- Web screenshotting and spidering
+- Web screenshotting and crawling
 - Retrieving (hopefully sensitive) endpoints from the Wayback Machine
 - Identification of interesting parameterized URLs with Gf
 - Subdomain takeover detection
 - Port scanning (Top 1000 TCP + SNMP)
 
-## To-do
+## Tools
 
-- [ ] Automatically install all requirements
-- [x] Implement additional vulnerability checks (please reach out if you have any suggestions!)
-    - [x] Implement Nuclei for automatic checks
-- [x] Optimize nmap scans
-- [x] Implement basic multi-domain support
-
-- **Won't fix:** Integration with BurpSuite proxy. Would introduce too many dependencies and reduce ease of use. As a solution I have included a script that sends the crawled scope (or any list of endpoints)       through the burp proxy for manual passive/active crawling.
+- `amass`
+- `dnsutils`
+- `Go`
+- `gau`
+- `Gf` (with `Gf-Patterns`)
+- `gospider`
+- `httpx`
+- `nmap`
+- `Nuclei` (with `Nuclei-Templates`)
+- `qsreplace`
+- `subjack`
+- `webscreenshot`

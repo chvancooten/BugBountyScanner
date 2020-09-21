@@ -2,25 +2,39 @@
 ## Automated Bug Bounty recon script
 ## By Cas van Cooten
 
-### CONFIG (NOTE! SECRETS INSIDE!)
-toolsDir='/root/toolkit'
-telegram_api_key='X'
-telegram_chat_id='X'
-### END CONFIG
-
-baseDir=$(dirname "$(readlink -f "$0")")
+scriptDir=$(dirname "$(readlink -f "$0")")
+baseDir=$PWD
 lastNotified=0
 thorough=true
+notify=true
 
 function notify {
-    if [ $(($(date +%s) - lastNotified)) -le 3 ]; then
-        echo "[!] Notifying too quickly, sleeping to avoid skipped notifications..."
-        sleep 3
+    if [ "$notify" = true ]
+    then
+        if [ $(($(date +%s) - lastNotified)) -le 3 ]
+        then
+            echo "[!] Notifying too quickly, sleeping to avoid skipped notifications..."
+            sleep 3
+        fi
+
+        message=`echo -ne "*BugBountyAutomator [$DOMAIN]:* $1" | sed 's/[^a-zA-Z 0-9*_]/\\\\&/g'`
+        curl -s -X POST "https://api.telegram.org/bot$telegram_api_key/sendMessage" -d chat_id="$telegram_chat_id" -d text="$message" -d parse_mode="MarkdownV2" &> /dev/null
+        lastNotified=$(date +%s)
     fi
-    message=`echo -ne "*BugBountyAutomator [$DOMAIN]:* $1" | sed 's/[^a-zA-Z 0-9*_]/\\\\&/g'`
-    curl -s -X POST https://api.telegram.org/bot$telegram_api_key/sendMessage -d chat_id="$telegram_chat_id" -d text="$message" -d parse_mode="MarkdownV2" &> /dev/null
-    lastNotified=$(date +%s)
 }
+
+if [ -f "$scriptDir/.env" ]
+then
+    set -a
+    . .env
+    set +a
+fi
+
+if [ -z "$telegram_api_key" ] || [ -z "$telegram_chat_id" ]
+then
+    echo "[i] \$telegram_api_key and \$telegram_chat_id variables not found, disabling notifications..."
+    notify=false
+fi
 
 for arg in "$@"
 do
@@ -32,11 +46,14 @@ do
         echo " "
         echo "options:"
         echo "-h, --help                show brief help"
+        echo "-t, --toolsdir            tools directory (no trailing /), defaults to '/opt'"
         echo "-q, --quick               perform quick recon only (default: false)"
         echo "-d, --domain <domain>     top domain to scan, can take multiple"
         echo " "
+        echo "Note: 'ToolsDir', 'telegram_api_key' and 'telegram_chat_id' can be defined in .env or through Docker environment variables."
+        echo " "
         echo "example:"
-        echo "$0 --quick -d google.com -d uber.com"
+        echo "$0 --quick -d google.com -d uber.com -t /opt"
         exit 0
         ;;
         -q|--quick)
@@ -45,6 +62,11 @@ do
         ;;
         -d|--domain)
         domainargs+=("$2")
+        shift
+        shift
+        ;;
+        -t|--toolsdir)
+        toolsDir="$2"
         shift
         shift
         ;;
@@ -59,49 +81,22 @@ else
     IFS=', ' read -r -a DOMAINS <<< "$domainsresponse"  
 fi
 
-if command -v subjack &> /dev/null # Very crude dependency check :D
+if [ -z "$toolsDir" ]
+then
+    echo "[i] \$toolsDir variable not defined in .env, defaulting to /opt..."
+    toolsDir="/opt"
+fi
+
+echo "$PATH" | grep -q "$HOME/go/bin" || export PATH=$PATH:$HOME/go/bin
+
+if command -v nuclei &> /dev/null # Very crude dependency check :D
 then
 	echo "[*] DEPENDENCIES FOUND. NOT INSTALLING."
 else
-    echo "[*] INSTALLING DEPENDENCIES..."
-    # Based on running 'hackersploit/bugbountytoolkit' docker image which has Amass/Nmap included. Adapt where required.
-    apt update --assume-yes 
-    apt install --assume-yes phantomjs
-    apt install --assume-yes xvfb
-    apt install --assume-yes dnsutils
-    pip install webscreenshot
-	
-    echo "[*] Updating Golang.."
-    curl "https://raw.githubusercontent.com/udhos/update-golang/master/update-golang.sh" | bash
-
-    echo "[*] INSTALLING GO DEPENDENCIES (OUTPUT MAY FREEZE)..."
-    go get -u github.com/lc/gau
-    go get -u github.com/tomnomnom/gf
-    go get -u github.com/jaeles-project/gospider
-    go get -u github.com/projectdiscovery/httpx/cmd/httpx
-    go get -u github.com/tomnomnom/qsreplace
-    go get -u github.com/haccer/subjack
-
-    echo "[*] INSTALLING GIT DEPENDENCIES..."
-    ### Nuclei (Workaround -https://github.com/projectdiscovery/nuclei/issues/291)
-    cd "$toolsDir" || { echo "Something went wrong"; exit 1; }
-    git clone -q https://github.com/projectdiscovery/nuclei.git 
-    cd nuclei/cmd/nuclei/ || { echo "Something went wrong"; exit 1; }
-    go build
-    mv nuclei /usr/local/bin/
-
-    ### Nuclei templates
-    cd "$toolsDir"'/nuclei' || { echo "Something went wrong"; exit 1; }
-    git clone -q https://github.com/projectdiscovery/nuclei-templates.git
-
-    ### Gf-Patterns
-    cd "$toolsDir" || { echo "Something went wrong"; exit 1; }
-    git clone -q https://github.com/1ndianl33t/Gf-Patterns
-    mkdir ~/.gf
-    cp "$toolsDir"/Gf-Patterns/*.json  ~/.gf
-
-    cd "$baseDir" || { echo "Something went wrong"; exit 1; }
+    bash "$scriptDir/setup.sh" -t "$toolsDir"
 fi
+
+cd "$baseDir" || { echo "Something went wrong"; exit 1; }
 
 echo "[*] STARTING RECON."
 notify "Starting recon on *${#DOMAINS[@]}* subdomains."
@@ -162,7 +157,7 @@ do
     #     done
     # fi
     # rm -rf telerik-vulnerable
-
+    #
     # echo "[*] SEARCHING FOR EXPOSED .GIT FOLDERS..."
     # notify "Searching for exposed .git folders..."
     # httpx -silent -l "domains-$DOMAIN.txt" -path /.git/config -ports 80,8080,443,8443 -threads 25 -mc 200 -sr -srd gitfolders
@@ -197,7 +192,7 @@ do
         cat "WayBack-$DOMAIN.txt" "GoSpider-$DOMAIN.txt" | sort -u | qsreplace -a > "paths-$DOMAIN.txt"
         rm "WayBack-$DOMAIN.txt" "GoSpider-$DOMAIN.txt"
 
-        ######### OBSOLETE, REPLACED BY GF / MANUAL #########
+        ######### OBSOLETE, REPLACED BY GF / MANUAL INSPECTION #########
         # echo "[**] SEARCHING FOR POSSIBLE SQL INJECTIONS..."
         # notify "(THOROUGH) Searching for possible SQL injections..."
         # grep "=" "paths-$DOMAIN.txt" | sed '/^.\{255\}./d' | qsreplace "' OR '1" | httpx -silent -threads 25 -sr -srd sqli-vulnerable
@@ -212,7 +207,7 @@ do
         #     done
         # fi
         # rm -rf sqli-vulnerable
-        #####################################################
+        ################################################################
 
         echo "[*] GETTING INTERESTING PARAMETERS WITH GF..."
         mkdir "check-manually"
@@ -224,7 +219,7 @@ do
         gf sqli < "paths-$DOMAIN.txt" | httpx -silent -no-color -threads 25 -mc 200 -o "check-manually/sql-injection.txt"
         gf lfi < "paths-$DOMAIN.txt" | httpx -silent -no-color -threads 25 -mc 200 -o "check-manually/local-file-inclusion.txt"
         gf ssti < "paths-$DOMAIN.txt" | httpx -silent -no-color -threads 25 -mc 200 -o "check-manually/server-side-template-injection.txt"
-        gf debug_logic | httpx -silent -no-color -threads 25 -o "paths-$DOMAIN.txt" > "check-manually/debug-logic.txt"
+        gf debug_logic < "paths-$DOMAIN.txt" | httpx -silent -no-color -threads 25 -mc 200 -o "check-manually/debug-logic.txt"
         notify "GF done! Identified *$(cat check-manually/* | wc -l)* interesting and live parameter endpoints to check. Resolving hostnames to IP addresses..."
 
         echo "[*] Resolving IP addresses from hosts..."
