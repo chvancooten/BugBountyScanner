@@ -34,8 +34,8 @@ services:
     tty: true
     image: chvancooten/bugbountyscanner:latest
     environment:
-    - telegram_api_key='X'
-    - telegram_chat_id='X'
+    - telegram_api_key=X
+    - telegram_chat_id=X
     volumes:
       - ${USERDIR}/docker/bugbountybox:/root/bugbounty
     # VPN recommended :)
