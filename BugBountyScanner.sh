@@ -179,7 +179,7 @@ do
     if [ "$thorough" = true ] ; then
         echo "[*] RUNNING NUCLEI..."
         notify "Detecting known vulnerabilities with Nuclei..."
-        nuclei -c 75 -l "livedomains-$DOMAIN.txt" -t "$toolsDir"'/nuclei/nuclei-templates/' -severity low,medium,high -o "nuclei-$DOMAIN.txt"
+        nuclei -c 75 -l "livedomains-$DOMAIN.txt" -t "$toolsDir"'/nuclei-templates/' -severity low,medium,high -o "nuclei-$DOMAIN.txt"
         notify "Nuclei completed. Found *$(wc -l < "nuclei-$DOMAIN.txt")* (potential) issues. Spidering paths with GoSpider..."
 
         echo "**] RUNNING GOSPIDER..."
@@ -238,7 +238,7 @@ do
         echo "[*] RUNNING NMAP (SNMP UDP)..."
         nmap -T4 -sU -sV -p 161 --open --source-port 53 -iL nmap/tcpips.txt -oA nmap/nmap-161udp
         rm nmap/tcpips.txt
-        notify "Nmap TCP done! Identified *$(grep "Port" < "nmap/nmap-161udp.gnmap" | grep -cv "filtered")* IPS with SNMP port open." 
+        notify "Nmap UDP done! Identified *$(grep "Port" < "nmap/nmap-161udp.gnmap" | grep -cv "filtered")* IPS with SNMP port open." 
     fi
 
     cd ..

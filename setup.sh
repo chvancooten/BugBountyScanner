@@ -62,7 +62,7 @@ go build
 mv nuclei /usr/local/bin/
 
 ### Nuclei templates
-cd "$toolsDir"'/nuclei' || { echo "Something went wrong"; exit 1; }
+cd "$toolsDir" || { echo "Something went wrong"; exit 1; }
 git clone -q https://github.com/projectdiscovery/nuclei-templates.git
 
 ### Gf-Patterns
