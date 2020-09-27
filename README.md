@@ -1,5 +1,10 @@
 # BugBountyScanner
 
+![](https://img.shields.io/docker/cloud/build/chvancooten/bugbountyscanner)
+![](https://img.shields.io/docker/cloud/automated/chvancooten/bugbountyscanner)
+![](https://img.shields.io/docker/image-size/chvancooten/bugbountyscanner)
+![](https://img.shields.io/docker/pulls/chvancooten/bugbountyscanner)
+
 A simple Bash script for Bug Bounty reconnaissance, intended for headless use. Low on resources, high on information output.
 
 ## Description
