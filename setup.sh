@@ -57,7 +57,7 @@ echo "[*] INSTALLING GIT DEPENDENCIES..."
 ### Nuclei (Workaround -https://github.com/projectdiscovery/nuclei/issues/291)
 cd "$toolsDir" || { echo "Something went wrong"; exit 1; }
 git clone -q https://github.com/projectdiscovery/nuclei.git 
-cd nuclei/cmd/nuclei/ || { echo "Something went wrong"; exit 1; }
+cd nuclei/v2/cmd/nuclei/ || { echo "Something went wrong"; exit 1; }
 go build
 mv nuclei /usr/local/bin/
 
