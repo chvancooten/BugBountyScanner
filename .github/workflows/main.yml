@@ -5,14 +5,17 @@ on:
     branches: [ master ]
   pull_request:
     branches: [ master ]
+  schedule:
+    - cron:  '0 4 * * SAT'
 
 jobs:
 
   build:
 
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-20.04
 
     steps:
-    - uses: actions/checkout@v2
+    - name: Checkout code into workspace directory
+      uses: actions/checkout@v2
     - name: Build the Docker image
       run: docker build .

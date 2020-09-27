@@ -1,11 +1,12 @@
 # BugBountyScanner
 
+[![GitHub Workflow Status](https://img.shields.io/github/workflow/status/chvancooten/bugbountyscanner/Docker%20Build)](https://github.com/chvancooten/BugBountyScanner/actions)
 [![Docker Build Badge](https://img.shields.io/docker/cloud/build/chvancooten/bugbountyscanner)](https://hub.docker.com/r/chvancooten/bugbountyscanner/)
 [![Docker Automated Badge](https://img.shields.io/docker/cloud/automated/chvancooten/bugbountyscanner)](https://hub.docker.com/r/chvancooten/bugbountyscanner/)
 [![Docker Image Size Badge](https://img.shields.io/docker/image-size/chvancooten/bugbountyscanner)](https://hub.docker.com/r/chvancooten/bugbountyscanner/)
 [![Docker Pulls Badge](https://img.shields.io/docker/pulls/chvancooten/bugbountyscanner)](https://hub.docker.com/r/chvancooten/bugbountyscanner/)
 
-A simple Bash script for Bug Bounty reconnaissance, intended for headless use. Low on resources, high on information output.
+A Bash script and Docker image for Bug Bounty reconnaissance, intended for headless use. Low on resources, high on information output.
 
 ## Description
 
@@ -60,6 +61,8 @@ docker build .
 ### Manual
 
 If you prefer running the script manually, you can do so.
+
+> ℹ Note: The script (and images) have been built on -and tested for- Ubuntu 20.04. Your mileage may vary with other distro's, but given the dependencies are in order it should work on most Debian / Ubuntu-based installs.
 
 ```
 git clone https://github.com/chvancooten/BugBountyScanner.git
