@@ -62,6 +62,8 @@ docker build .
 
 If you prefer running the script manually, you can do so.
 
+> ℹ Note: The script (and images) have been built on -and tested for- Ubuntu 20.04. Your mileage may vary with other distro's, but given the dependencies are in order it should work on most Debian / Ubuntu-based installs.
+
 ```
 git clone https://github.com/chvancooten/BugBountyScanner.git
 cd BugBountyScanner
