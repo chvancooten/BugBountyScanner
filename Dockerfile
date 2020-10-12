@@ -33,14 +33,14 @@ ENV GOROOT /usr/local/go
 ENV GOPATH /root/go
 ENV PATH ${GOPATH}/bin:${GOROOT}/bin:${PATH}
 
+RUN export GO111MODULE=on \
+    && go get -u github.com/OWASP/Amass/v3/...
 RUN go get -u github.com/lc/gau >/dev/null
 RUN go get -u github.com/tomnomnom/gf >/dev/null
 RUN go get -u github.com/jaeles-project/gospider >/dev/null
 RUN go get -u github.com/projectdiscovery/httpx/cmd/httpx >/dev/null
 RUN go get -u github.com/tomnomnom/qsreplace >/dev/null
 RUN go get -u github.com/haccer/subjack >/dev/null
-RUN export GO111MODULE=on \
-    && go get -u github.com/OWASP/Amass/v3/... >/dev/null
 
 RUN cd /opt && \
     git clone https://github.com/projectdiscovery/nuclei.git >/dev/null && \
