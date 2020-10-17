@@ -187,7 +187,7 @@ do
         notify "Nuclei completed. Found *$(wc -l < "nuclei-$DOMAIN.txt")* (potential) issues, of which *$critIssues* are critical, and *$highIssues* are high severity. Spidering paths with GoSpider..."
         elif [ "$highIssues" -gt 0 ]
         then
-        notify "Nuclei completed. Found *$(wc -l < "nuclei-$DOMAIN.txt")* (potential) issues, of which *$highIssues* are high severity Spidering paths with GoSpider..."
+        notify "Nuclei completed. Found *$(wc -l < "nuclei-$DOMAIN.txt")* (potential) issues, of which *$highIssues* are high severity. Spidering paths with GoSpider..."
         else
         notify "Nuclei completed. Found *$(wc -l < "nuclei-$DOMAIN.txt")* (potential) issues, of which none are critical or high severity. Spidering paths with GoSpider..."
         fi
