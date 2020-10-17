@@ -119,7 +119,7 @@ do
     notify "HTTPX completed. *$(wc -l < "livedomains-$DOMAIN.txt")* endpoints seem to be alive. Checking for hijackable subdomains with SubJack..."
 
     echo "[*] RUNNING SUBJACK..."
-    subjack -w "domains-$DOMAIN.txt" -t 100 -o "subjack-$DOMAIN.txt" -a
+    subjack -w "domains-$DOMAIN.txt" -t 100 -c "$(find / -name "fingerprints.json" 2>/dev/null)" -o "subjack-$DOMAIN.txt" -a
     if [ -f "subjack-$DOMAIN.txt" ]; then
         echo "[+] HIJACKABLE SUBDOMAINS FOUND!"
         notify "SubJack completed. One or more hijackable subdomains found!"
