@@ -180,7 +180,17 @@ do
         echo "[*] RUNNING NUCLEI..."
         notify "Detecting known vulnerabilities with Nuclei..."
         nuclei -c 75 -l "livedomains-$DOMAIN.txt" -t "$toolsDir"'/nuclei-templates/' -severity low,medium,high -o "nuclei-$DOMAIN.txt"
-        notify "Nuclei completed. Found *$(wc -l < "nuclei-$DOMAIN.txt")* (potential) issues. Spidering paths with GoSpider..."
+        highIssues="$(grep -c 'high' < nuclei-wehkamp.nl.txt)"
+        critIssues="$(grep -c 'critical' < nuclei-wehkamp.nl.txt)"
+        if [ "$critIssues" -gt 0 ]
+        then
+        notify "Nuclei completed. Found *$(wc -l < "nuclei-$DOMAIN.txt")* (potential) issues, of which *$critIssues* are critical, and *$highIssues* are high severity. Spidering paths with GoSpider..."
+        elif [ "$highIssues" -gt 0 ]
+        then
+        notify "Nuclei completed. Found *$(wc -l < "nuclei-$DOMAIN.txt")* (potential) issues, of which *$highIssues* are high severity Spidering paths with GoSpider..."
+        else
+        notify "Nuclei completed. Found *$(wc -l < "nuclei-$DOMAIN.txt")* (potential) issues, of which none are critical or high severity. Spidering paths with GoSpider..."
+        fi
 
         echo "**] RUNNING GOSPIDER..."
         gospider -S "livedomains-$DOMAIN.txt" -o GoSpider -t 2 -c 5 -d 3 --blacklist jpg,jpeg,gif,css,tif,tiff,png,ttf,woff,woff2,ico,svg
