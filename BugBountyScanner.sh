@@ -220,7 +220,22 @@ do
         gf lfi < "paths-$DOMAIN.txt" | httpx -silent -no-color -threads 25 -mc 200 -o "check-manually/local-file-inclusion.txt"
         gf ssti < "paths-$DOMAIN.txt" | httpx -silent -no-color -threads 25 -mc 200 -o "check-manually/server-side-template-injection.txt"
         gf debug_logic < "paths-$DOMAIN.txt" | httpx -silent -no-color -threads 25 -mc 200 -o "check-manually/debug-logic.txt"
-        notify "GF done! Identified *$(cat check-manually/* | wc -l)* interesting and live parameter endpoints to check. Resolving hostnames to IP addresses..."
+        notify "GF done! Identified *$(cat check-manually/* | wc -l)* interesting and live parameter endpoints to check. Testing for SSTI..."
+
+        echo "[*] Testing for SSTI..."
+        # NOTE: Testing with _all_ params instead of gf output. May reduce scope if this takes too long.
+        qsreplace "BugBountyScanner{{9*9}}" < "paths-$DOMAIN.txt"| httpx -silent -threads 25 -sr -srd ssti-vulnerable
+        grep -r -L -Z "BugBountyScanner81" ssti-vulnerable | xargs --null rm
+        if [ "$(find ssti-vulnerable/* -maxdepth 0 | wc -l)" -eq "0" ]; then
+            notify "No possible Server-Side Template Injections found. Resolving hostnames to IP addresses..."
+        else
+            notify "Identified *$(find ssti-vulnerable/* -maxdepth 0 | wc -l)* endpoints potentially vulnerable to Server-Side Template Injection! Resolving hostnames to IP addresses..."
+            for file in ssti-vulnerable/*; do
+                printf "\n\n########## %s ##########\n\n" "$file" >> potential-ssti.txt
+                cat "$file" >> potential-ssti.txt
+            done
+        fi
+        rm -rf ssti-vulnerable
 
         echo "[*] Resolving IP addresses from hosts..."
         while read -r hostname; do

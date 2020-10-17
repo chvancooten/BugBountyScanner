@@ -2,6 +2,8 @@
 ## Automated Bug Bounty recon script dependency installer
 ## By Cas van Cooten
 
+### NOTE: This installation script is deprecated by the implementation of the Dockerfile. Not all dependencies may automatically work.
+
 for arg in "$@"
 do
     case $arg in
