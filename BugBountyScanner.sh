@@ -179,7 +179,7 @@ do
     if [ "$thorough" = true ] ; then
         echo "[*] RUNNING NUCLEI..."
         notify "Detecting known vulnerabilities with Nuclei..."
-        nuclei -c 150 -l "livedomains-$DOMAIN.txt" -t "$toolsDir"'/nuclei-templates/' -severity low,medium,high -o "nuclei-$DOMAIN.txt"
+        nuclei -c 150 -l "livedomains-$DOMAIN.txt" -t "$toolsDir"'/nuclei-templates/' -severity low,medium,high,critical -o "nuclei-$DOMAIN.txt"
         highIssues="$(grep -c 'high' < nuclei-wehkamp.nl.txt)"
         critIssues="$(grep -c 'critical' < nuclei-wehkamp.nl.txt)"
         if [ "$critIssues" -gt 0 ]
