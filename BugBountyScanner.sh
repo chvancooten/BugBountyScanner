@@ -179,7 +179,7 @@ do
     if [ "$thorough" = true ] ; then
         echo "[*] RUNNING NUCLEI..."
         notify "Detecting known vulnerabilities with Nuclei..."
-        nuclei -c 75 -l "livedomains-$DOMAIN.txt" -t "$toolsDir"'/nuclei-templates/' -severity low,medium,high -o "nuclei-$DOMAIN.txt"
+        nuclei -c 150 -l "livedomains-$DOMAIN.txt" -t "$toolsDir"'/nuclei-templates/' -severity low,medium,high -o "nuclei-$DOMAIN.txt"
         highIssues="$(grep -c 'high' < nuclei-wehkamp.nl.txt)"
         critIssues="$(grep -c 'critical' < nuclei-wehkamp.nl.txt)"
         if [ "$critIssues" -gt 0 ]
@@ -192,7 +192,7 @@ do
         notify "Nuclei completed. Found *$(wc -l < "nuclei-$DOMAIN.txt")* (potential) issues, of which none are critical or high severity. Spidering paths with GoSpider..."
         fi
 
-        echo "**] RUNNING GOSPIDER..."
+        echo "[*] RUNNING GOSPIDER..."
         gospider -S "livedomains-$DOMAIN.txt" -o GoSpider -t 2 -c 5 -d 3 --blacklist jpg,jpeg,gif,css,tif,tiff,png,ttf,woff,woff2,ico,svg
         cat GoSpider/* | grep -o -E "(([a-zA-Z][a-zA-Z0-9+-.]*\:\/\/)|mailto|data\:)([a-zA-Z0-9\.\&\/\?\:@\+-\_=#%;,])*" | sort -u | qsreplace -a | grep "$DOMAIN" > "GoSpider-$DOMAIN.txt"
         rm -rf GoSpider
@@ -221,15 +221,14 @@ do
 
         echo "[*] GETTING INTERESTING PARAMETERS WITH GF..."
         mkdir "check-manually"
-        gf ssrf < "paths-$DOMAIN.txt" | httpx -silent -no-color -threads 25 -mc 200 -o "check-manually/server-side-request-forgery.txt"
-        gf xss < "paths-$DOMAIN.txt" | httpx -silent -no-color -threads 25 -mc 200 -o "check-manually/cross-site-scripting.txt"
-        gf redirect < "paths-$DOMAIN.txt" | httpx -silent -no-color -threads 25 -mc 200 -o "check-manually/open-redirect.txt"
-        gf rce < "paths-$DOMAIN.txt" | httpx -silent -no-color -threads 25 -mc 200 -o "check-manually/rce.txt"
-        gf idor < "paths-$DOMAIN.txt" | httpx -silent -no-color -threads 25 -mc 200 -o "check-manually/insecure-direct-object-reference.txt"
-        gf sqli < "paths-$DOMAIN.txt" | httpx -silent -no-color -threads 25 -mc 200 -o "check-manually/sql-injection.txt"
-        gf lfi < "paths-$DOMAIN.txt" | httpx -silent -no-color -threads 25 -mc 200 -o "check-manually/local-file-inclusion.txt"
-        gf ssti < "paths-$DOMAIN.txt" | httpx -silent -no-color -threads 25 -mc 200 -o "check-manually/server-side-template-injection.txt"
-        gf debug_logic < "paths-$DOMAIN.txt" | httpx -silent -no-color -threads 25 -mc 200 -o "check-manually/debug-logic.txt"
+        gf ssrf < "paths-$DOMAIN.txt" | httpx -silent -no-color -threads 50 -mc 200 -o "check-manually/server-side-request-forgery.txt"
+        gf xss < "paths-$DOMAIN.txt" | httpx -silent -no-color -threads 50 -mc 200 -o "check-manually/cross-site-scripting.txt"
+        gf redirect < "paths-$DOMAIN.txt" | httpx -silent -no-color -threads 50 -mc 200 -o "check-manually/open-redirect.txt"
+        gf rce < "paths-$DOMAIN.txt" | httpx -silent -no-color -threads 50 -mc 200 -o "check-manually/rce.txt"
+        gf idor < "paths-$DOMAIN.txt" | httpx -silent -no-color -threads 50 -mc 200 -o "check-manually/insecure-direct-object-reference.txt"
+        gf sqli < "paths-$DOMAIN.txt" | httpx -silent -no-color -threads 50 -mc 200 -o "check-manually/sql-injection.txt"
+        gf lfi < "paths-$DOMAIN.txt" | httpx -silent -no-color -threads 50 -mc 200 -o "check-manually/local-file-inclusion.txt"
+        gf ssti < "paths-$DOMAIN.txt" | httpx -silent -no-color -threads 50 -mc 200 -o "check-manually/server-side-template-injection.txt"
         notify "GF done! Identified *$(cat check-manually/* | wc -l)* interesting and live parameter endpoints to check. Testing for Server-Side Template Injection..."
 
         echo "[*] Testing for SSTI..."
