@@ -179,10 +179,20 @@ do
     if [ "$thorough" = true ] ; then
         echo "[*] RUNNING NUCLEI..."
         notify "Detecting known vulnerabilities with Nuclei..."
-        nuclei -c 75 -l "livedomains-$DOMAIN.txt" -t "$toolsDir"'/nuclei-templates/' -severity low,medium,high -o "nuclei-$DOMAIN.txt"
-        notify "Nuclei completed. Found *$(wc -l < "nuclei-$DOMAIN.txt")* (potential) issues. Spidering paths with GoSpider..."
+        nuclei -c 150 -l "livedomains-$DOMAIN.txt" -t "$toolsDir"'/nuclei-templates/' -severity low,medium,high,critical -o "nuclei-$DOMAIN.txt"
+        highIssues="$(grep -c 'high' < nuclei-wehkamp.nl.txt)"
+        critIssues="$(grep -c 'critical' < nuclei-wehkamp.nl.txt)"
+        if [ "$critIssues" -gt 0 ]
+        then
+        notify "Nuclei completed. Found *$(wc -l < "nuclei-$DOMAIN.txt")* (potential) issues, of which *$critIssues* are critical, and *$highIssues* are high severity. Spidering paths with GoSpider..."
+        elif [ "$highIssues" -gt 0 ]
+        then
+        notify "Nuclei completed. Found *$(wc -l < "nuclei-$DOMAIN.txt")* (potential) issues, of which *$highIssues* are high severity. Spidering paths with GoSpider..."
+        else
+        notify "Nuclei completed. Found *$(wc -l < "nuclei-$DOMAIN.txt")* (potential) issues, of which none are critical or high severity. Spidering paths with GoSpider..."
+        fi
 
-        echo "**] RUNNING GOSPIDER..."
+        echo "[*] RUNNING GOSPIDER..."
         gospider -S "livedomains-$DOMAIN.txt" -o GoSpider -t 2 -c 5 -d 3 --blacklist jpg,jpeg,gif,css,tif,tiff,png,ttf,woff,woff2,ico,svg
         cat GoSpider/* | grep -o -E "(([a-zA-Z][a-zA-Z0-9+-.]*\:\/\/)|mailto|data\:)([a-zA-Z0-9\.\&\/\?\:@\+-\_=#%;,])*" | sort -u | qsreplace -a | grep "$DOMAIN" > "GoSpider-$DOMAIN.txt"
         rm -rf GoSpider
@@ -211,16 +221,57 @@ do
 
         echo "[*] GETTING INTERESTING PARAMETERS WITH GF..."
         mkdir "check-manually"
-        gf ssrf < "paths-$DOMAIN.txt" | httpx -silent -no-color -threads 25 -mc 200 -o "check-manually/server-side-request-forgery.txt"
-        gf xss < "paths-$DOMAIN.txt" | httpx -silent -no-color -threads 25 -mc 200 -o "check-manually/cross-site-scripting.txt"
-        gf redirect < "paths-$DOMAIN.txt" | httpx -silent -no-color -threads 25 -mc 200 -o "check-manually/open-redirect.txt"
-        gf rce < "paths-$DOMAIN.txt" | httpx -silent -no-color -threads 25 -mc 200 -o "check-manually/rce.txt"
-        gf idor < "paths-$DOMAIN.txt" | httpx -silent -no-color -threads 25 -mc 200 -o "check-manually/insecure-direct-object-reference.txt"
-        gf sqli < "paths-$DOMAIN.txt" | httpx -silent -no-color -threads 25 -mc 200 -o "check-manually/sql-injection.txt"
-        gf lfi < "paths-$DOMAIN.txt" | httpx -silent -no-color -threads 25 -mc 200 -o "check-manually/local-file-inclusion.txt"
-        gf ssti < "paths-$DOMAIN.txt" | httpx -silent -no-color -threads 25 -mc 200 -o "check-manually/server-side-template-injection.txt"
-        gf debug_logic < "paths-$DOMAIN.txt" | httpx -silent -no-color -threads 25 -mc 200 -o "check-manually/debug-logic.txt"
-        notify "GF done! Identified *$(cat check-manually/* | wc -l)* interesting and live parameter endpoints to check. Resolving hostnames to IP addresses..."
+        gf ssrf < "paths-$DOMAIN.txt" | httpx -silent -no-color -threads 50 -mc 200 -o "check-manually/server-side-request-forgery.txt"
+        gf xss < "paths-$DOMAIN.txt" | httpx -silent -no-color -threads 50 -mc 200 -o "check-manually/cross-site-scripting.txt"
+        gf redirect < "paths-$DOMAIN.txt" | httpx -silent -no-color -threads 50 -mc 200 -o "check-manually/open-redirect.txt"
+        gf rce < "paths-$DOMAIN.txt" | httpx -silent -no-color -threads 50 -mc 200 -o "check-manually/rce.txt"
+        gf idor < "paths-$DOMAIN.txt" | httpx -silent -no-color -threads 50 -mc 200 -o "check-manually/insecure-direct-object-reference.txt"
+        gf sqli < "paths-$DOMAIN.txt" | httpx -silent -no-color -threads 50 -mc 200 -o "check-manually/sql-injection.txt"
+        gf lfi < "paths-$DOMAIN.txt" | httpx -silent -no-color -threads 50 -mc 200 -o "check-manually/local-file-inclusion.txt"
+        gf ssti < "paths-$DOMAIN.txt" | httpx -silent -no-color -threads 50 -mc 200 -o "check-manually/server-side-template-injection.txt"
+        notify "GF done! Identified *$(cat check-manually/* | wc -l)* interesting and live parameter endpoints to check. Testing for Server-Side Template Injection..."
+
+        echo "[*] Testing for SSTI..."
+        qsreplace "BugBountyScanner{{9*9}}" < "check-manually/server-side-template-injection.txt" | httpx -silent -threads 25 -sr -srd ssti-vulnerable
+        grep -r -L -Z "BugBountyScanner81" ssti-vulnerable | xargs --null rm
+        if [ "$(find ssti-vulnerable/* -maxdepth 0 | wc -l)" -eq "0" ]; then
+            notify "No possible SSTI found. Testing for LFI..."
+        else
+            notify "Identified *$(find ssti-vulnerable/* -maxdepth 0 | wc -l)* endpoints potentially vulnerable to SSTI! Testing for Local File Inclusion..."
+            for file in ssti-vulnerable/*; do
+                printf "\n\n########## %s ##########\n\n" "$file" >> potential-ssti.txt
+                cat "$file" >> potential-ssti.txt
+            done
+        fi
+        rm -rf ssti-vulnerable
+
+        echo "[*] Testing for (*nix) LFI..."
+        qsreplace "/etc/passwd" < "check-manually/local-file-inclusion.txt" | httpx -silent -threads 25 -sr -srd lfi-vulnerable
+        grep -r -L -Z "root:x:" lfi-vulnerable | xargs --null rm
+        if [ "$(find lfi-vulnerable/* -maxdepth 0 | wc -l)" -eq "0" ]; then
+            notify "No possible LFI found. Testing for Open Redirections..."
+        else
+            notify "Identified *$(find lfi-vulnerable/* -maxdepth 0 | wc -l)* endpoints potentially vulnerable to LFI! Testing for Open Redirections..."
+            for file in lfi-vulnerable/*; do
+                printf "\n\n########## %s ##########\n\n" "$file" >> potential-lfi.txt
+                cat "$file" >> potential-lfi.txt
+            done
+        fi
+        rm -rf lfi-vulnerable
+
+        echo "[*] Testing for Open Redirects..."
+        qsreplace "https://www.testing123.com" < "check-manually/open-redirect.txt" | httpx -silent -threads 25 -sr -srd or-vulnerable
+        grep -r -L -Z "Location: https://www.testing123.com" or-vulnerable | xargs --null rm
+        if [ "$(find or-vulnerable/* -maxdepth 0 | wc -l)" -eq "0" ]; then
+            notify "No possible OR found. Resolving hosts..."
+        else
+            notify "Identified *$(find or-vulnerable/* -maxdepth 0 | wc -l)* endpoints potentially vulnerable to OR! Resolving hosts..."
+            for file in or-vulnerable/*; do
+                printf "\n\n########## %s ##########\n\n" "$file" >> potential-or.txt
+                cat "$file" >> potential-or.txt
+            done
+        fi
+        rm -rf or-vulnerable
 
         echo "[*] Resolving IP addresses from hosts..."
         while read -r hostname; do
