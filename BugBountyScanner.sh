@@ -172,7 +172,7 @@ do
         # Find common endpoints containing (hopefully new and interesting) parameters from GAU/Wayback list
         grep -f "tmp-LivePathsQuery-$DOMAIN.txt" "WayBack-$DOMAIN.txt" > "tmp-LiveWayBack-$DOMAIN.txt"
         # Merge new parameters with GoSpider list and get only unique endpoints
-        cat "tmp-LiveWayBack-$DOMAIN.txt" "tmp-GoSpider-$DOMAIN.txt" | sort -u | qsreplace -a > "paths-$DOMAIN.txt"
+        cat "tmp-LiveWayBack-$DOMAIN.txt" "tmp-GoSpider-$DOMAIN.txt" | grep "$DOMAIN" | sort -u | qsreplace -a > "paths-$DOMAIN.txt"
         rm "tmp-LivePathsQuery-$DOMAIN.txt" "tmp-LiveWayBack-$DOMAIN.txt" "tmp-GoSpider-$DOMAIN.txt"
 
         echo "[*] GETTING INTERESTING PARAMETERS WITH GF..."
