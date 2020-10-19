@@ -164,7 +164,7 @@ do
         gospider -S "livedomains-$DOMAIN.txt" -o GoSpider -t 2 -c 5 -d 3 --blacklist jpg,jpeg,gif,css,tif,tiff,png,ttf,woff,woff2,ico,svg
         cat GoSpider/* | grep -o -E "(([a-zA-Z][a-zA-Z0-9+-.]*\:\/\/)|mailto|data\:)([a-zA-Z0-9\.\&\/\?\:@\+-\_=#%;,])*" | sort -u | qsreplace -a | grep "$DOMAIN" > "tmp-GoSpider-$DOMAIN.txt"
         rm -rf GoSpider
-        notify "GoSpider completed. Crawled *$(wc -l < "tmp-GoSpider-$DOMAIN.txt")* endpoints. Identifying unique live endpoints (from WaybackMachine and GoSpider)..."
+        notify "GoSpider completed. Crawled *$(wc -l < "tmp-GoSpider-$DOMAIN.txt")* endpoints. Getting interesting endpoints and parameters..."
 
         ## Enrich GoSpider list with parameters from GAU/WayBack. Disregard new GAU endpoints to prevent clogging with unreachable endpoints (See Issue #24).
         # Get only endpoints from GoSpider list (assumed to be live), disregard parameters, and append ? for grepping
@@ -174,7 +174,6 @@ do
         # Merge new parameters with GoSpider list and get only unique endpoints
         cat "tmp-LiveWayBack-$DOMAIN.txt" "tmp-GoSpider-$DOMAIN.txt" | sort -u | qsreplace -a > "paths-$DOMAIN.txt"
         rm "tmp-LivePathsQuery-$DOMAIN.txt" "tmp-LiveWayBack-$DOMAIN.txt" "tmp-GoSpider-$DOMAIN.txt"
-        notify "Done. Gathered a total of *$(wc -l < "paths-$DOMAIN.txt")* interesting paths. Filtering possibly exploitable parametrized endpoints with GF..."
 
         echo "[*] GETTING INTERESTING PARAMETERS WITH GF..."
         mkdir "check-manually"
@@ -186,7 +185,7 @@ do
         gf sqli < "paths-$DOMAIN.txt" > "check-manually/sql-injection.txt"
         gf lfi < "paths-$DOMAIN.txt" > "check-manually/local-file-inclusion.txt"
         gf ssti < "paths-$DOMAIN.txt" > "check-manually/server-side-template-injection.txt"
-        notify "GF done! Identified *$(cat check-manually/* | wc -l)* interesting parameter endpoints to check. Testing for Server-Side Template Injection..."
+        notify "Done! Gathered a total of *$(wc -l < "paths-$DOMAIN.txt")* paths, of which *$(cat check-manually/* | wc -l)* possibly exploitable. Testing for Server-Side Template Injection..."
 
         # echo "[*] CHECKING LIVENESS OF GF-IDENTIFIED ENDPOINTS (TO CHECK MANUALLY)..."
         # httpx -silent -no-color -l "check-manually/server-side-request-forgery.txt" -threads 25 -o "check-manually/live/server-side-request-forgery.txt"
@@ -200,34 +199,34 @@ do
         # rm check-manually/* && mv check-manually/live/* check-manually/ && rm -rf check-manually/live/
         # notify "Done! Identified *$(cat check-manually/* | wc -l)* live endpoints to check. Testing for Server-Side Template Injection..."
 
-        echo "[*] Testing for SSTI..."
+        echo "[*] TESTING FOR SSTI..."
         qsreplace "BugBountyScanner{{9*9}}" < "check-manually/server-side-template-injection.txt" | \
         xargs -I % -P 100 sh -c 'curl -s "%" 2>&1 | grep -q "BugBountyScanner81" && echo "[+] Found endpoint likely to be vulnerable to SSTI: %" && echo "%" >> potential-ssti.txt'
         if [ -f "potential-ssti.txt" ]; then
             notify "Identified *$(wc -l < potential-ssti.txt)* endpoints potentially vulnerable to SSTI! Testing for Local File Inclusion..."
         else
-            notify "No possible SSTI found. Testing for Local File Inclusion..."
+            notify "No SSTI found. Testing for Local File Inclusion..."
         fi
 
-        echo "[*] Testing for (*nix) LFI..."
+        echo "[*] TESTING FOR (*NIX) LFI..."
         qsreplace "/etc/passwd" < "check-manually/local-file-inclusion.txt" | \
         xargs -I % -P 100 sh -c 'curl -s "%" 2>&1 | grep -q "root:x:" && echo "[+] Found endpoint likely to be vulnerable to LFI: %" && echo "%" >> potential-lfi.txt'
         if [ -f "potential-lfi.txt" ]; then
             notify "Identified *$(wc -l < potential-lfi.txt)* endpoints potentially vulnerable to LFI! Testing for Open Redirections..."
         else
-            notify "No possible LFI found. Testing for Open Redirections..."
+            notify "No LFI found. Testing for Open Redirections..."
         fi
 
-        echo "[*] Testing for Open Redirects..."
+        echo "[*] TESTING FOR OPEN REDIRECTS..."
         qsreplace "https://www.testing123.com" < "check-manually/open-redirect.txt" | \
         xargs -I % -P 100 sh -c 'curl -s "%" 2>&1 | grep -q "Location: https://www.testing123.com" && echo "[+] Found endpoint likely to be vulnerable to OR: %" && echo "%" >> potential-or.txt'
         if [ -f "potential-or.txt" ]; then
-            notify "Identified *$(wc -l < potential-or.txt)* endpoints potentially vulnerable to OR! Resolving IP Addresses..."
+            notify "Identified *$(wc -l < potential-or.txt)* endpoints potentially vulnerable to open redirects! Resolving IP Addresses..."
         else
-            notify "No possible OR found. Resolving IP Addresses..."
+            notify "No open redirects found. Resolving IP Addresses..."
         fi
 
-        echo "[*] Resolving IP addresses from hosts..."
+        echo "[*] RESOLVING IP ADDRESSES FROM HOSTS..."
         while read -r hostname; do
             dig "$hostname" +short >> "dig.txt"
         done < "domains-$DOMAIN.txt"
