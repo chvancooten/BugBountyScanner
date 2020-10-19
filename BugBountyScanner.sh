@@ -17,6 +17,7 @@ function notify {
             sleep 3
         fi
 
+        # Format string to escape special characters and send message through Telegram API.
         message=`echo -ne "*BugBountyAutomator [$DOMAIN]:* $1" | sed 's/[^a-zA-Z 0-9*_]/\\\\&/g'`
         curl -s -X POST "https://api.telegram.org/bot$telegram_api_key/sendMessage" -d chat_id="$telegram_chat_id" -d text="$message" -d parse_mode="MarkdownV2" &> /dev/null
         lastNotified=$(date +%s)
@@ -119,6 +120,7 @@ do
     notify "HTTPX completed. *$(wc -l < "livedomains-$DOMAIN.txt")* endpoints seem to be alive. Checking for hijackable subdomains with SubJack..."
 
     echo "[*] RUNNING SUBJACK..."
+    # Manually find 'fingerprints.json' file, as it somehow cannot find it after installing through Docker.
     subjack -w "domains-$DOMAIN.txt" -t 100 -c "$(find / -name "fingerprints.json" 2>/dev/null)" -o "subjack-$DOMAIN.txt" -a
     if [ -f "subjack-$DOMAIN.txt" ]; then
         echo "[+] HIJACKABLE SUBDOMAINS FOUND!"
@@ -135,46 +137,11 @@ do
     notify "WebScreenshot completed! Took *$(find webscreenshot/* -maxdepth 0 | wc -l)* screenshots. Getting Wayback Machine path list with GAU..."
 
     echo "[*] RUNNING GAU..."
+    # Get ONLY Wayback URLs with parameters to prevent clutter
     gau -subs -providers wayback -o "gau-$DOMAIN.txt" "$DOMAIN"
     grep '?' < "gau-$DOMAIN.txt" | qsreplace -a > "WayBack-$DOMAIN.txt"
     rm "gau-$DOMAIN.txt"
     notify "GAU completed. Got *$(wc -l < "WayBack-$DOMAIN.txt")* paths."
-
-    ######### OBSOLETE, REPLACED BY NUCLEI #########
-    # echo "[*] SEARCHING FOR TELERIK ENDPOINTS..."
-    # notify "Searching for potentially vulnerable Telerik endpoints..."
-    # httpx -silent -l "domains-$DOMAIN.txt" -path /Telerik.Web.UI.WebResource.axd?type=rau -ports 80,8080,443,8443 -threads 25 -mc 200 -sr -srd telerik-vulnerable
-    # grep -r -L -Z "RadAsyncUpload" telerik-vulnerable | xargs --null rm
-    # if [ "$(find telerik-vulnerable/* -maxdepth 0 | wc -l)" -eq "0" ]; then
-    #     echo "[-] NO TELERIK ENDPOINTS FOUND."
-    #     notify "No Telerik endpoints found."
-    # else
-    #     echo "[+] TELERIK ENDPOINTS FOUND!"
-    #     notify "*$(find telerik-vulnerable/* -maxdepth 0 | wc -l)* Telerik endpoints found. Manually inspect if vulnerable!"
-    #     for file in telerik-vulnerable/*; do
-    #         printf "\n\n########## %s ##########\n\n" "$file" >> potential-telerik.txt
-    #         cat "$file" >> potential-telerik.txt
-    #     done
-    # fi
-    # rm -rf telerik-vulnerable
-    #
-    # echo "[*] SEARCHING FOR EXPOSED .GIT FOLDERS..."
-    # notify "Searching for exposed .git folders..."
-    # httpx -silent -l "domains-$DOMAIN.txt" -path /.git/config -ports 80,8080,443,8443 -threads 25 -mc 200 -sr -srd gitfolders
-    # grep -r -L -Z "\[core\]" gitfolders | xargs --null rm
-    # if [ "$(find gitfolders/* -maxdepth 0 | wc -l)" -eq "0" ]; then
-    #     echo "[-] NO .GIT FOLDERS FOUND."
-    #     notify "No .git folders found."
-    # else
-    #     echo "[+] .GIT FOLDERS FOUND!"
-    #     notify "*$(find gitfolders/* -maxdepth 0 | wc -l)* .git folders found!"
-    #     for file in gitfolders/*; do
-    #         printf "\n\n########## %s ##########\n\n" "$file" >> gitfolders.txt
-    #         cat "$file" >> gitfolders.txt
-    #     done
-    # fi
-    # rm -rf gitfolders
-    ################################################
 
     if [ "$thorough" = true ] ; then
         echo "[*] RUNNING NUCLEI..."
@@ -193,31 +160,21 @@ do
         fi
 
         echo "[*] RUNNING GOSPIDER..."
+        # Spider for unique URLs, filter duplicate parameters
         gospider -S "livedomains-$DOMAIN.txt" -o GoSpider -t 2 -c 5 -d 3 --blacklist jpg,jpeg,gif,css,tif,tiff,png,ttf,woff,woff2,ico,svg
-        cat GoSpider/* | grep -o -E "(([a-zA-Z][a-zA-Z0-9+-.]*\:\/\/)|mailto|data\:)([a-zA-Z0-9\.\&\/\?\:@\+-\_=#%;,])*" | sort -u | qsreplace -a | grep "$DOMAIN" > "GoSpider-$DOMAIN.txt"
+        cat GoSpider/* | grep -o -E "(([a-zA-Z][a-zA-Z0-9+-.]*\:\/\/)|mailto|data\:)([a-zA-Z0-9\.\&\/\?\:@\+-\_=#%;,])*" | sort -u | qsreplace -a | grep "$DOMAIN" > "tmp-GoSpider-$DOMAIN.txt"
         rm -rf GoSpider
-        notify "GoSpider completed. Crawled *$(wc -l < "GoSpider-$DOMAIN.txt")* endpoints. Identifying interesting parameterized endpoints (from WaybackMachine and GoSpider) with GF..."
+        notify "GoSpider completed. Crawled *$(wc -l < "tmp-GoSpider-$DOMAIN.txt")* endpoints. Identifying unique live endpoints (from WaybackMachine and GoSpider)..."
 
-        # Merge GAU and GoSpider files into one big list of (hopefully) interesting paths
-        cat "WayBack-$DOMAIN.txt" "GoSpider-$DOMAIN.txt" | sort -u | qsreplace -a > "paths-$DOMAIN.txt"
-        rm "WayBack-$DOMAIN.txt" "GoSpider-$DOMAIN.txt"
-
-        ######### OBSOLETE, REPLACED BY GF / MANUAL INSPECTION #########
-        # echo "[**] SEARCHING FOR POSSIBLE SQL INJECTIONS..."
-        # notify "(THOROUGH) Searching for possible SQL injections..."
-        # grep "=" "paths-$DOMAIN.txt" | sed '/^.\{255\}./d' | qsreplace "' OR '1" | httpx -silent -threads 25 -sr -srd sqli-vulnerable
-        # grep -r -L -Z "syntax error\|mysql\|sql" sqli-vulnerable | xargs --null rm
-        # if [ "$(find sqli-vulnerable/* -maxdepth 0 | wc -l)" -eq "0" ]; then
-        #     notify "No possible SQL injections found."
-        # else
-        #     notify "Identified *$(find sqli-vulnerable/* -maxdepth 0 | wc -l)* endpoints potentially vulnerable to SQL injection!"
-        #     for file in sqli-vulnerable/*; do
-        #         printf "\n\n########## %s ##########\n\n" "$file" >> potential-sqli.txt
-        #         cat "$file" >> potential-sqli.txt
-        #     done
-        # fi
-        # rm -rf sqli-vulnerable
-        ################################################################
+        ## Enrich GoSpider list with parameters from GAU/WayBack. Disregard new GAU endpoints to prevent clogging with unreachable endpoints (See Issue #24).
+        # Get only endpoints from GoSpider list (assumed to be live), disregard parameters, and append ? for grepping
+        sed "s/\?.*//" "tmp-GoSpider-$DOMAIN.txt" | sort -u | sed -e 's/$/\?/' > "tmp-LivePathsQuery-$DOMAIN.txt"
+        # Find common endpoints containing (hopefully new and interesting) parameters from GAU/Wayback list
+        grep -f "tmp-LivePathsQuery-$DOMAIN.txt" "WayBack-$DOMAIN.txt" > "tmp-LiveWayBack-$DOMAIN.txt"
+        # Merge new parameters with GoSpider list and get only unique endpoints
+        cat "tmp-LiveWayBack-$DOMAIN.txt" "tmp-GoSpider-$DOMAIN.txt" | sort -u | qsreplace -a > "paths-$DOMAIN.txt"
+        rm "tmp-LivePathsQuery-$DOMAIN.txt" "tmp-LiveWayBack-$DOMAIN.txt" "tmp-GoSpider-$DOMAIN.txt"
+        notify "Done. Gathered a total of *$(wc -l < "paths-$DOMAIN.txt")* interesting paths. Filtering possibly exploitable parametrized endpoints with GF..."
 
         echo "[*] GETTING INTERESTING PARAMETERS WITH GF..."
         mkdir "check-manually"
@@ -229,19 +186,19 @@ do
         gf sqli < "paths-$DOMAIN.txt" > "check-manually/sql-injection.txt"
         gf lfi < "paths-$DOMAIN.txt" > "check-manually/local-file-inclusion.txt"
         gf ssti < "paths-$DOMAIN.txt" > "check-manually/server-side-template-injection.txt"
-        notify "GF done! Identified *$(cat check-manually/* | wc -l)* interesting parameter endpoints to check. Checking liveness..."
+        notify "GF done! Identified *$(cat check-manually/* | wc -l)* interesting parameter endpoints to check. Testing for Server-Side Template Injection..."
 
-        echo "[*] CHECKING LIVENESS OF GF-IDENTIFIED ENDPOINTS (TO CHECK MANUALLY)..."
-        httpx -silent -no-color -l "check-manually/server-side-request-forgery.txt" -threads 25 -o "check-manually/live/server-side-request-forgery.txt"
-        httpx -silent -no-color -l "check-manually/cross-site-scripting.txt" -threads 25 -o "check-manually/live/cross-site-scripting.txt"
-        httpx -silent -no-color -l "check-manually/open-redirect.txt" -threads 25 -o "check-manually/live/open-redirect.txt"
-        httpx -silent -no-color -l "check-manually/rce.txt" -threads 25 -o "check-manually/live/rce.txt"
-        httpx -silent -no-color -l "check-manually/insecure-direct-object-reference.txt" -threads 25 -o "check-manually/live/insecure-direct-object-reference.txt"
-        httpx -silent -no-color -l "check-manually/sql-injection.txt" -threads 25 -o "check-manually/live/sql-injection.txt"
-        httpx -silent -no-color -l "check-manually/local-file-inclusion.txt" -threads 25 -o "check-manually/live/local-file-inclusion.txt"
-        httpx -silent -no-color -l "check-manually/server-side-template-injection.txt" -threads 25 -o "check-manually/live/server-side-template-injection.txt"
-        rm check-manually/* && mv check-manually/live/* check-manually/ && rm -rf check-manually/live/
-        notify "Done! Identified *$(cat check-manually/* | wc -l)* live endpoints to check. Testing for Server-Side Template Injection..."
+        # echo "[*] CHECKING LIVENESS OF GF-IDENTIFIED ENDPOINTS (TO CHECK MANUALLY)..."
+        # httpx -silent -no-color -l "check-manually/server-side-request-forgery.txt" -threads 25 -o "check-manually/live/server-side-request-forgery.txt"
+        # httpx -silent -no-color -l "check-manually/cross-site-scripting.txt" -threads 25 -o "check-manually/live/cross-site-scripting.txt"
+        # httpx -silent -no-color -l "check-manually/open-redirect.txt" -threads 25 -o "check-manually/live/open-redirect.txt"
+        # httpx -silent -no-color -l "check-manually/rce.txt" -threads 25 -o "check-manually/live/rce.txt"
+        # httpx -silent -no-color -l "check-manually/insecure-direct-object-reference.txt" -threads 25 -o "check-manually/live/insecure-direct-object-reference.txt"
+        # httpx -silent -no-color -l "check-manually/sql-injection.txt" -threads 25 -o "check-manually/live/sql-injection.txt"
+        # httpx -silent -no-color -l "check-manually/local-file-inclusion.txt" -threads 25 -o "check-manually/live/local-file-inclusion.txt"
+        # httpx -silent -no-color -l "check-manually/server-side-template-injection.txt" -threads 25 -o "check-manually/live/server-side-template-injection.txt"
+        # rm check-manually/* && mv check-manually/live/* check-manually/ && rm -rf check-manually/live/
+        # notify "Done! Identified *$(cat check-manually/* | wc -l)* live endpoints to check. Testing for Server-Side Template Injection..."
 
         echo "[*] Testing for SSTI..."
         qsreplace "BugBountyScanner{{9*9}}" < "check-manually/server-side-template-injection.txt" | \
