@@ -14,13 +14,13 @@ A Bash script and Docker image for Bug Bounty reconnaissance, intended for headl
 
 It's recommended to run BugBountyScanner from a server (VPS or home server), and _not_ from your terminal. It is programmed to be low on resources, with potentially multiple days of scanning in mind for bigger scopes. The script functions on a stand-alone basis.
 
-You can run the script either as a docker image or from your preferred Debian/Ubuntu system (see below). All that is required is kicking off the script and forgetting all about it! Running the script takes anywhere in between several minutes (for very small scopes < 10 subdomains) and several days (for very large scopes > 20000 subdomains). A 'thorough mode' flag is present, which includes some time-consuming tasks such as port scanning and subdomain crawling.
+You can run the script either as a docker image or from your preferred Debian/Ubuntu system (see below). All that is required is kicking off the script and forgetting all about it! Running the script takes anywhere in between several minutes (for very small scopes < 10 subdomains) and several days (for very large scopes > 20000 subdomains). A 'quick mode' flag is present, which drops some time-consuming tasks such as vulnerability identification, port scanning, and web endpoint crawling.
 
 ## Installation
 
 ### Docker
 
-Docker Hub Link: https://hub.docker.com/r/chvancooten/bugbountyscanner.
+Docker Hub Link: https://hub.docker.com/r/chvancooten/bugbountyscanner. Images are generated automatically for both the Dev branch (`:dev` tag) and the Master branch (`:latest` tag).
 
 You can pull the Docker image from Docker Hub as below.
 
@@ -71,6 +71,7 @@ cp .env.example .env
 # Edit accordingly
 chmod +x BugBountyScanner.sh
 # Setup is automatically triggered, but can be manually run
+# Note: The setup script is deprecated for the Docker installation
 chmod +x setup.sh
 ./setup.sh -t /custom/tools/dir
 ./BugBountyScanner.sh --help
@@ -86,6 +87,7 @@ chmod +x setup.sh
 - Web screenshotting and crawling
 - Retrieving (hopefully sensitive) endpoints from the Wayback Machine
 - Identification of interesting parameterized URLs with Gf
+- Detection of LFI, SSTI, and Open Redirects in URL parameters
 - Subdomain takeover detection
 - Port scanning (Top 1000 TCP + SNMP)
 
