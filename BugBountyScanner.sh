@@ -83,8 +83,13 @@ done
 
 if [ ! -d "$baseDir" ]
 then
-    echo "[!] Provided output directory \"$baseDir\" does not exist, please create it or provide an existing directory"
-    exit 1
+    read -N 1 -p "[?] Provided output directory \"$baseDir\" does not exist, create it? [Y/N] "
+    echo
+    if [[ ! $REPLY =~ ^[Yy]$ ]]
+    then
+        exit 1
+    fi
+    mkdir -p "$baseDir"
 fi
 
 if [ "${#domainargs[@]}" -ne 0 ]
