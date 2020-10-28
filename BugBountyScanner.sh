@@ -127,7 +127,7 @@ notify "Starting recon on *${#DOMAINS[@]}* subdomains."
 
 for DOMAIN in "${DOMAINS[@]}"
 do
-    mkdir "$DOMAIN"
+    mkdir -p "$DOMAIN"
     cd "$DOMAIN" || { echo "Something went wrong"; exit 1; }
 
     echo "[*] RUNNING RECON ON $DOMAIN."
@@ -187,8 +187,8 @@ do
             echo "[*] RUNNING NUCLEI..."
             notify "Detecting known vulnerabilities with Nuclei..."
             nuclei -c 150 -l "livedomains-$DOMAIN.txt" -t "$toolsDir"'/nuclei-templates/' -severity low,medium,high,critical -o "nuclei-$DOMAIN.txt"
-            highIssues="$(grep -c 'high' < nuclei-wehkamp.nl.txt)"
-            critIssues="$(grep -c 'critical' < nuclei-wehkamp.nl.txt)"
+            highIssues="$(grep -c 'high' < "nuclei-$DOMAIN.txt")"
+            critIssues="$(grep -c 'critical' < "nuclei-$DOMAIN.txt")"
             if [ "$critIssues" -gt 0 ]
             then
             notify "Nuclei completed. Found *$(wc -l < "nuclei-$DOMAIN.txt")* (potential) issues, of which *$critIssues* are critical, and *$highIssues* are high severity. Spidering paths with GoSpider..."
