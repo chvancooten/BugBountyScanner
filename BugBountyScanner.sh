@@ -138,6 +138,8 @@ do
         echo "[*] RUNNING AMASS..."
         amass enum --passive -d "$DOMAIN" -o "domains-$DOMAIN.txt"
         notify "Amass completed! Identified *$(wc -l < "domains-$DOMAIN.txt")* subdomains. Checking for live hosts with HTTPX..."
+    else
+        echo "[-] SKIPPING AMASS"
     fi
 
     if [ ! -f "livedomains-$DOMAIN.txt" ] || [ "$overwrite" = true ]
@@ -146,6 +148,8 @@ do
         httpx -silent -no-color -l "domains-$DOMAIN.txt" -title -content-length -web-server -status-code -ports 80,8080,443,8443 -threads 25 -o "httpx-$DOMAIN.txt"
         cut -d' ' -f1 < "httpx-$DOMAIN.txt" | sort -u > "livedomains-$DOMAIN.txt"
         notify "HTTPX completed. *$(wc -l < "livedomains-$DOMAIN.txt")* endpoints seem to be alive. Checking for hijackable subdomains with SubJack..."
+    else
+        echo "[-] SKIPPING HTTPX"
     fi
 
     if [ ! -f "subjack-$DOMAIN.txt" ] || [ "$overwrite" = true ]
@@ -153,15 +157,17 @@ do
         echo "[*] RUNNING SUBJACK..."
         # Manually find 'fingerprints.json' file, as it somehow cannot find it after installing through Docker.
         subjack -w "domains-$DOMAIN.txt" -t 100 -c "$(find / -name "fingerprints.json" 2>/dev/null)" -o "subjack-$DOMAIN.txt" -a
-    fi
-    if [ -f "subjack-$DOMAIN.txt" ]; then
-        echo "[+] HIJACKABLE SUBDOMAINS FOUND!"
-        notify "SubJack completed. One or more hijackable subdomains found!"
-        notify "Hijackable domains: $(cat "subjack-$DOMAIN.txt")"
-        notify "Gathering live page screenshots with WebScreenshot..."
+        if [ -f "subjack-$DOMAIN.txt" ]; then
+            echo "[+] HIJACKABLE SUBDOMAINS FOUND!"
+            notify "SubJack completed. One or more hijackable subdomains found!"
+            notify "Hijackable domains: $(cat "subjack-$DOMAIN.txt")"
+            notify "Gathering live page screenshots with WebScreenshot..."
+        else
+            echo "[-] NO HIJACKABLE SUBDOMAINS FOUND."
+            notify "No hijackable subdomains found. Gathering live page screenshots with WebScreenshot..."
+        fi
     else
-        echo "[-] NO HIJACKABLE SUBDOMAINS FOUND."
-        notify "No hijackable subdomains found. Gathering live page screenshots with WebScreenshot..."
+        echo "[-] SKIPPING SUBJACK"
     fi
 
     if [ ! -d "webscreenshot" ] || [ "$overwrite" = true ]
@@ -169,6 +175,8 @@ do
         echo "[*] RUNNING WEBSCREENSHOT..."
         webscreenshot -i "livedomains-$DOMAIN.txt" -o webscreenshot --no-error-file
         notify "WebScreenshot completed! Took *$(find webscreenshot/* -maxdepth 0 | wc -l)* screenshots. Getting Wayback Machine path list with GAU..."
+    else
+        echo "[-] SKIPPING WEBSCREENSHOT"
     fi
 
     if [ ! -f "WayBack-$DOMAIN.txt" ] || [ "$overwrite" = true ]
@@ -179,6 +187,8 @@ do
         grep '?' < "gau-$DOMAIN.txt" | qsreplace -a > "WayBack-$DOMAIN.txt"
         rm "gau-$DOMAIN.txt"
         notify "GAU completed. Got *$(wc -l < "WayBack-$DOMAIN.txt")* paths."
+    else
+        echo "[-] SKIPPING GAU"
     fi
 
     if [ "$thorough" = true ] ; then
@@ -198,6 +208,8 @@ do
             else
             notify "Nuclei completed. Found *$(wc -l < "nuclei-$DOMAIN.txt")* (potential) issues, of which none are critical or high severity. Spidering paths with GoSpider..."
             fi
+        else
+            echo "[-] SKIPPING NUCLEI"
         fi
 
         if [ ! -f "paths-$DOMAIN.txt" ] || [ "$overwrite" = true ]
@@ -217,7 +229,10 @@ do
             # Merge new parameters with GoSpider list and get only unique endpoints
             cat "tmp-LiveWayBack-$DOMAIN.txt" "tmp-GoSpider-$DOMAIN.txt" | sort -u | qsreplace -a > "paths-$DOMAIN.txt"
             rm "tmp-LivePathsQuery-$DOMAIN.txt" "tmp-LiveWayBack-$DOMAIN.txt" "tmp-GoSpider-$DOMAIN.txt"
+        else
+            echo "[-] SKIPPING GOSPIDER"
         fi
+
         if [ ! -d "check-manually" ] || [ "$overwrite" = true ]
         then
             echo "[*] GETTING INTERESTING PARAMETERS WITH GF..."
@@ -243,6 +258,8 @@ do
             # httpx -silent -no-color -l "check-manually/server-side-template-injection.txt" -threads 25 -o "check-manually/live/server-side-template-injection.txt"
             # rm check-manually/* && mv check-manually/live/* check-manually/ && rm -rf check-manually/live/
             # notify "Done! Identified *$(cat check-manually/* | wc -l)* live endpoints to check. Testing for Server-Side Template Injection..."
+        else
+            echo "[-] SKIPPING GF"
         fi
 
         if [ ! -f "potential-ssti.txt" ] || [ "$overwrite" = true ]
@@ -255,6 +272,8 @@ do
             else
                 notify "No SSTI found. Testing for Local File Inclusion..."
             fi
+        else
+            echo "[-] SKIPPING TEST FOR SSTI"
         fi
 
         if [ ! -f "potential-lfi.txt" ] || [ "$overwrite" = true ]
@@ -267,6 +286,8 @@ do
             else
                 notify "No LFI found. Testing for Open Redirections..."
             fi
+        else
+            echo "[-] SKIPPING TEST FOR (*NIX) LFI"
         fi
 
         if [ ! -f "potential-or.txt" ] || [ "$overwrite" = true ]
@@ -279,6 +300,8 @@ do
             else
                 notify "No open redirects found. Resolving IP Addresses..."
             fi
+        else
+            echo "[-] SKIPPING TEST FOR OPEN REDIRECTS"
         fi
 
         if [ ! -f "ip-addresses-$DOMAIN.txt" ] || [ "$overwrite" = true ]
@@ -289,6 +312,8 @@ do
             done < "domains-$DOMAIN.txt"
             grep -o '[0-9]\{1,3\}\.[0-9]\{1,3\}\.[0-9]\{1,3\}\.[0-9]\{1,3\}' "dig.txt" | sort -u > "ip-addresses-$DOMAIN.txt" && rm "dig.txt"
             notify "Resolving done! Starting Nmap for *$(wc -l < "ip-addresses-$DOMAIN.txt")* IP addresses..."
+        else
+            echo "[-] SKIPPING RESOLVING HOST IP ADDRESSES"
         fi
 
         if [ ! -d "nmap" ] || [ "$overwrite" = true ]
@@ -303,6 +328,8 @@ do
             nmap -T4 -sU -sV -p 161 --open --source-port 53 -iL nmap/tcpips.txt -oA nmap/nmap-161udp
             rm nmap/tcpips.txt
             notify "Nmap UDP done! Identified *$(grep "Port" < "nmap/nmap-161udp.gnmap" | grep -cv "filtered")* IPS with SNMP port open."
+        else
+            echo "[-] SKIPPING NMAP"
         fi
     fi
 
