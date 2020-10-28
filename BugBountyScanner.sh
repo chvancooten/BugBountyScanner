@@ -7,6 +7,7 @@ baseDir=$PWD
 lastNotified=0
 thorough=true
 notify=true
+outDir=$PWD
 
 function notify {
     if [ "$notify" = true ]
@@ -50,6 +51,7 @@ do
         echo "-t, --toolsdir            tools directory (no trailing /), defaults to '/opt'"
         echo "-q, --quick               perform quick recon only (default: false)"
         echo "-d, --domain <domain>     top domain to scan, can take multiple"
+        echo "-o, --outputdirectory     output directory, defaults to current directory ('.')"
         echo " "
         echo "Note: 'ToolsDir', 'telegram_api_key' and 'telegram_chat_id' can be defined in .env or through Docker environment variables."
         echo " "
@@ -71,8 +73,24 @@ do
         shift
         shift
         ;;
+        -o|--outputdirectory)
+        baseDir="$2"
+        shift
+        shift
+        ;;
     esac
 done
+
+if [ ! -d "$baseDir" ]
+then
+    read -N 1 -p "[?] Provided output directory \"$baseDir\" does not exist, create it? [Y/N] "
+    echo
+    if [[ ! $REPLY =~ ^[Yy]$ ]]
+    then
+        exit 1
+    fi
+    mkdir -p "$baseDir"
+fi
 
 if [ "${#domainargs[@]}" -ne 0 ]
 then
