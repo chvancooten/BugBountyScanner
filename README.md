@@ -78,6 +78,30 @@ chmod +x setup.sh
 ./BugBountyScanner.sh -d target1.com -d target2.net -t /custom/tools/dir --quick
 ```
 
+## Usage
+
+Use `--help` or `-h` for a brief help menu.
+
+```
+root@dockerhost:~# ./BugBountyScanner.sh -h
+BugBountyHunter - Automated Bug Bounty reconnaisance script
+ 
+./BugBountyScanner.sh [options]
+ 
+options:
+-h, --help                show brief help
+-t, --toolsdir            tools directory (no trailing /), defaults to '/opt'
+-q, --quick               perform quick recon only (default: false)
+-d, --domain <domain>     top domain to scan, can take multiple
+-o, --outputdirectory     output directory, defaults to current directory ('.')
+-w, --overwrite           overwrite existing files. Skip steps with existing files if not provided (default: false)
+ 
+Note: 'ToolsDir', 'telegram_api_key' and 'telegram_chat_id' can be defined in .env or through Docker environment variables.
+ 
+example:
+./BugBountyScanner.sh --quick -d google.com -d uber.com -t /opt
+```
+
 ## Features
 
 - Resource-efficient, suitable for running in the background for a prolonged period of time on e.g. a home server or Raspberry Pi
