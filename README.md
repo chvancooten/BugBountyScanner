@@ -8,6 +8,10 @@
 
 A Bash script and Docker image for Bug Bounty reconnaissance, intended for headless use. Low on resources, high on information output.
 
+Helpful? BugBountyScanner helped you net a bounty?
+
+[![Docker Image Size Badge](https://img.shields.io/badge/%F0%9F%8D%BA-Buy%20me%20a%20beer-orange)](https://www.buymeacoffee.com/chvancooten)
+
 ## Description
 
 > ⚠ Note: Using the script over a VPN is highly recommended.
