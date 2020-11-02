@@ -8,19 +8,23 @@
 
 A Bash script and Docker image for Bug Bounty reconnaissance, intended for headless use. Low on resources, high on information output.
 
+Helpful? BugBountyScanner helped you net a bounty?
+
+[![Docker Image Size Badge](https://img.shields.io/badge/%F0%9F%8D%BA-Buy%20me%20a%20beer-orange)](https://www.buymeacoffee.com/chvancooten)
+
 ## Description
 
 > ⚠ Note: Using the script over a VPN is highly recommended.
 
 It's recommended to run BugBountyScanner from a server (VPS or home server), and _not_ from your terminal. It is programmed to be low on resources, with potentially multiple days of scanning in mind for bigger scopes. The script functions on a stand-alone basis.
 
-You can run the script either as a docker image or from your preferred Debian/Ubuntu system (see below). All that is required is kicking off the script and forgetting all about it! Running the script takes anywhere in between several minutes (for very small scopes < 10 subdomains) and several days (for very large scopes > 20000 subdomains). A 'thorough mode' flag is present, which includes some time-consuming tasks such as port scanning and subdomain crawling.
+You can run the script either as a docker image or from your preferred Debian/Ubuntu system (see below). All that is required is kicking off the script and forgetting all about it! Running the script takes anywhere in between several minutes (for very small scopes < 10 subdomains) and several days (for very large scopes > 20000 subdomains). A 'quick mode' flag is present, which drops some time-consuming tasks such as vulnerability identification, port scanning, and web endpoint crawling.
 
 ## Installation
 
 ### Docker
 
-Docker Hub Link: https://hub.docker.com/r/chvancooten/bugbountyscanner.
+Docker Hub Link: https://hub.docker.com/r/chvancooten/bugbountyscanner. Images are generated automatically for both the Dev branch (`:dev` tag) and the Master branch (`:latest` tag).
 
 You can pull the Docker image from Docker Hub as below.
 
@@ -71,10 +75,35 @@ cp .env.example .env
 # Edit accordingly
 chmod +x BugBountyScanner.sh
 # Setup is automatically triggered, but can be manually run
+# Note: The setup script is deprecated for the Docker installation
 chmod +x setup.sh
 ./setup.sh -t /custom/tools/dir
 ./BugBountyScanner.sh --help
 ./BugBountyScanner.sh -d target1.com -d target2.net -t /custom/tools/dir --quick
+```
+
+## Usage
+
+Use `--help` or `-h` for a brief help menu.
+
+```
+root@dockerhost:~# ./BugBountyScanner.sh -h
+BugBountyHunter - Automated Bug Bounty reconnaisance script
+ 
+./BugBountyScanner.sh [options]
+ 
+options:
+-h, --help                show brief help
+-t, --toolsdir            tools directory (no trailing /), defaults to '/opt'
+-q, --quick               perform quick recon only (default: false)
+-d, --domain <domain>     top domain to scan, can take multiple
+-o, --outputdirectory     output directory, defaults to current directory ('.')
+-w, --overwrite           overwrite existing files. Skip steps with existing files if not provided (default: false)
+ 
+Note: 'ToolsDir', 'telegram_api_key' and 'telegram_chat_id' can be defined in .env or through Docker environment variables.
+ 
+example:
+./BugBountyScanner.sh --quick -d google.com -d uber.com -t /opt
 ```
 
 ## Features
@@ -86,6 +115,7 @@ chmod +x setup.sh
 - Web screenshotting and crawling
 - Retrieving (hopefully sensitive) endpoints from the Wayback Machine
 - Identification of interesting parameterized URLs with Gf
+- Detection of LFI, SSTI, and Open Redirects in URL parameters
 - Subdomain takeover detection
 - Port scanning (Top 1000 TCP + SNMP)
 

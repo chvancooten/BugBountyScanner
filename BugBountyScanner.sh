@@ -7,7 +7,6 @@ baseDir=$PWD
 lastNotified=0
 thorough=true
 notify=true
-outDir=$PWD
 overwrite=false
 
 function notify {
@@ -88,7 +87,7 @@ done
 
 if [ ! -d "$baseDir" ]
 then
-    read -N 1 -p "[?] Provided output directory \"$baseDir\" does not exist, create it? [Y/N] "
+    read -r -N 1 -p "[?] Provided output directory \"$baseDir\" does not exist, create it? [Y/N] "
     echo
     if [[ ! $REPLY =~ ^[Yy]$ ]]
     then
