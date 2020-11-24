@@ -195,7 +195,7 @@ do
         then
             echo "[*] RUNNING NUCLEI..."
             notify "Detecting known vulnerabilities with Nuclei..."
-            nuclei -c 150 -l "livedomains-$DOMAIN.txt" -t "$toolsDir"'/nuclei-templates/' -severity low,medium,high,critical -o "nuclei-$DOMAIN.txt"
+            nuclei -c 150 -l "livedomains-$DOMAIN.txt" -t "$toolsDir"'/nuclei-templates/' -severity low,medium,high,critical -o "nuclei-$DOMAIN.txt" -H "User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:72.0) Gecko/20100101 Firefox/72.0"
             highIssues="$(grep -c 'high' < "nuclei-$DOMAIN.txt")"
             critIssues="$(grep -c 'critical' < "nuclei-$DOMAIN.txt")"
             if [ "$critIssues" -gt 0 ]
