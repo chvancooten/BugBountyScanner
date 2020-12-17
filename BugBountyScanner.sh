@@ -233,7 +233,7 @@ do
         if [ ! -f "dirsearch-$DOMAIN.txt" ] || [ "$overwrite" = true ]
         then
             echo "[*] RUNNING DIRSEARCH..."
-            python3 "$toolsDir"/dirsearch/dirsearch.py -w "$toolsDir"/dirsearch/pathlist.txt -l "livedomains-$DOMAIN.txt" --simple-report "dirsearch-$DOMAIN.txt" -e php,aspx,html,zip,tar,txt --suffixes ~
+            python3 "$toolsDir"/dirsearch/dirsearch.py -w "$toolsDir"/dirsearch/pathlist.txt -l "livedomains-$DOMAIN.txt" --simple-report "dirsearch-$DOMAIN.txt" -e php,aspx,html,zip,txt
             notify "Dirsearch completed. Got *$(wc -l < "dirsearch-$DOMAIN.txt")* files. Spidering paths with GoSpider..."
         else
             echo "[-] SKIPPING DIRSEARCH"
