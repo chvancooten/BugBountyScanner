@@ -199,7 +199,6 @@ do
     if [ "$thorough" = true ] ; then
         if [ ! -f "nuclei-$DOMAIN.txt" ] || [ "$overwrite" = true ]
         then
-            
             if [ -z "$collabID" ]
             then
                 echo "[*] RUNNING NUCLEI (COLLABORATOR DISABLED)..."
@@ -211,19 +210,33 @@ do
                 nuclei -c 150 -l "livedomains-$DOMAIN.txt" -t "$toolsDir"'/nuclei-templates/' -severity low,medium,high,critical -o "nuclei-$DOMAIN.txt" -burp-collaborator-biid "$collabID"
             fi
             
-            highIssues="$(grep -c 'high' < "nuclei-$DOMAIN.txt")"
-            critIssues="$(grep -c 'critical' < "nuclei-$DOMAIN.txt")"
-            if [ "$critIssues" -gt 0 ]
+            if [ -f "nuclei-$DOMAIN.txt" ]
             then
-                notify "Nuclei completed. Found *$(wc -l < "nuclei-$DOMAIN.txt")* (potential) issues, of which *$critIssues* are critical, and *$highIssues* are high severity. Spidering paths with GoSpider..."
-            elif [ "$highIssues" -gt 0 ]
-            then
-                notify "Nuclei completed. Found *$(wc -l < "nuclei-$DOMAIN.txt")* (potential) issues, of which *$highIssues* are high severity. Spidering paths with GoSpider..."
+                highIssues="$(grep -c 'high' < "nuclei-$DOMAIN.txt")"
+                critIssues="$(grep -c 'critical' < "nuclei-$DOMAIN.txt")"
+                if [ "$critIssues" -gt 0 ]
+                then
+                    notify "Nuclei completed. Found *$(wc -l < "nuclei-$DOMAIN.txt")* (potential) issues, of which *$critIssues* are critical, and *$highIssues* are high severity. Finding interesting files with Dirsearch..."
+                elif [ "$highIssues" -gt 0 ]
+                then
+                    notify "Nuclei completed. Found *$(wc -l < "nuclei-$DOMAIN.txt")* (potential) issues, of which *$highIssues* are high severity. Finding interesting files with Dirsearch..."
+                else
+                    notify "Nuclei completed. Found *$(wc -l < "nuclei-$DOMAIN.txt")* (potential) issues, of which none are critical or high severity. Finding interesting files with Dirsearch..."
+                fi
             else
-                notify "Nuclei completed. Found *$(wc -l < "nuclei-$DOMAIN.txt")* (potential) issues, of which none are critical or high severity. Spidering paths with GoSpider..."
+                notify "Nuclei completed. No issues found. Finding interesting files with Dirsearch..."
             fi
         else
             echo "[-] SKIPPING NUCLEI"
+        fi
+
+        if [ ! -f "dirsearch-$DOMAIN.txt" ] || [ "$overwrite" = true ]
+        then
+            echo "[*] RUNNING DIRSEARCH..."
+            python3 "$toolsDir"/dirsearch/dirsearch.py -w "$toolsDir"/dirsearch/pathlist.txt -l "livedomains-$DOMAIN.txt" --simple-report "dirsearch-$DOMAIN.txt" -e php,aspx,html,zip,tar,txt --suffixes ~
+            notify "Dirsearch completed. Got *$(wc -l < "dirsearch-$DOMAIN.txt")* files. Spidering paths with GoSpider..."
+        else
+            echo "[-] SKIPPING DIRSEARCH"
         fi
 
         if [ ! -f "paths-$DOMAIN.txt" ] || [ "$overwrite" = true ]
