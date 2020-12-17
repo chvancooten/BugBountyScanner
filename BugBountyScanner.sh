@@ -25,19 +25,6 @@ function notify {
     fi
 }
 
-if [ -f "$scriptDir/.env" ]
-then
-    set -a
-    . .env
-    set +a
-fi
-
-if [ -z "$telegram_api_key" ] || [ -z "$telegram_chat_id" ]
-then
-    echo "[i] \$telegram_api_key and \$telegram_chat_id variables not found, disabling notifications..."
-    notify=false
-fi
-
 for arg in "$@"
 do
     case $arg in
@@ -90,6 +77,19 @@ do
         shift
     esac
 done
+
+if [ -f "$scriptDir/.env" ]
+then
+    set -a
+    . .env
+    set +a
+fi
+
+if [ -z "$telegram_api_key" ] || [ -z "$telegram_chat_id" ]
+then
+    echo "[i] \$telegram_api_key and \$telegram_chat_id variables not found, disabling notifications..."
+    notify=false
+fi
 
 if [ ! -d "$baseDir" ]
 then

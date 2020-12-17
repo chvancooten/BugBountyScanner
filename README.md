@@ -102,6 +102,7 @@ options:
 -d, --domain <domain>     top domain to scan, can take multiple
 -o, --outputdirectory     output directory, defaults to current directory ('.')
 -w, --overwrite           overwrite existing files. Skip steps with existing files if not provided (default: false)
+-c, --collaborator-id     pass a BurpSuite Collaborator ID to Nuclei to detect blind vulns (default: not enabled)
  
 Note: 'ToolsDir', 'telegram_api_key' and 'telegram_chat_id' can be defined in .env or through Docker environment variables.
  
