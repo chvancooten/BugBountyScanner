@@ -215,12 +215,12 @@ do
             critIssues="$(grep -c 'critical' < "nuclei-$DOMAIN.txt")"
             if [ "$critIssues" -gt 0 ]
             then
-            notify "Nuclei completed. Found *$(wc -l < "nuclei-$DOMAIN.txt")* (potential) issues, of which *$critIssues* are critical, and *$highIssues* are high severity. Spidering paths with GoSpider..."
+                notify "Nuclei completed. Found *$(wc -l < "nuclei-$DOMAIN.txt")* (potential) issues, of which *$critIssues* are critical, and *$highIssues* are high severity. Spidering paths with GoSpider..."
             elif [ "$highIssues" -gt 0 ]
             then
-            notify "Nuclei completed. Found *$(wc -l < "nuclei-$DOMAIN.txt")* (potential) issues, of which *$highIssues* are high severity. Spidering paths with GoSpider..."
+                notify "Nuclei completed. Found *$(wc -l < "nuclei-$DOMAIN.txt")* (potential) issues, of which *$highIssues* are high severity. Spidering paths with GoSpider..."
             else
-            notify "Nuclei completed. Found *$(wc -l < "nuclei-$DOMAIN.txt")* (potential) issues, of which none are critical or high severity. Spidering paths with GoSpider..."
+                notify "Nuclei completed. Found *$(wc -l < "nuclei-$DOMAIN.txt")* (potential) issues, of which none are critical or high severity. Spidering paths with GoSpider..."
             fi
         else
             echo "[-] SKIPPING NUCLEI"
@@ -260,18 +260,6 @@ do
             gf lfi < "paths-$DOMAIN.txt" > "check-manually/local-file-inclusion.txt"
             gf ssti < "paths-$DOMAIN.txt" > "check-manually/server-side-template-injection.txt"
             notify "Done! Gathered a total of *$(wc -l < "paths-$DOMAIN.txt")* paths, of which *$(cat check-manually/* | wc -l)* possibly exploitable. Testing for Server-Side Template Injection..."
-
-            # echo "[*] CHECKING LIVENESS OF GF-IDENTIFIED ENDPOINTS (TO CHECK MANUALLY)..."
-            # httpx -silent -no-color -l "check-manually/server-side-request-forgery.txt" -threads 25 -o "check-manually/live/server-side-request-forgery.txt"
-            # httpx -silent -no-color -l "check-manually/cross-site-scripting.txt" -threads 25 -o "check-manually/live/cross-site-scripting.txt"
-            # httpx -silent -no-color -l "check-manually/open-redirect.txt" -threads 25 -o "check-manually/live/open-redirect.txt"
-            # httpx -silent -no-color -l "check-manually/rce.txt" -threads 25 -o "check-manually/live/rce.txt"
-            # httpx -silent -no-color -l "check-manually/insecure-direct-object-reference.txt" -threads 25 -o "check-manually/live/insecure-direct-object-reference.txt"
-            # httpx -silent -no-color -l "check-manually/sql-injection.txt" -threads 25 -o "check-manually/live/sql-injection.txt"
-            # httpx -silent -no-color -l "check-manually/local-file-inclusion.txt" -threads 25 -o "check-manually/live/local-file-inclusion.txt"
-            # httpx -silent -no-color -l "check-manually/server-side-template-injection.txt" -threads 25 -o "check-manually/live/server-side-template-injection.txt"
-            # rm check-manually/* && mv check-manually/live/* check-manually/ && rm -rf check-manually/live/
-            # notify "Done! Identified *$(cat check-manually/* | wc -l)* live endpoints to check. Testing for Server-Side Template Injection..."
         else
             echo "[-] SKIPPING GF"
         fi
