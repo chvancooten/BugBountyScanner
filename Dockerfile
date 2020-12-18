@@ -44,6 +44,20 @@ RUN go get -u github.com/jaeles-project/gospider >/dev/null
 RUN go get -u github.com/tomnomnom/qsreplace >/dev/null
 RUN go get -u github.com/haccer/subjack >/dev/null
 RUN go get -u github.com/projectdiscovery/nuclei/v2/cmd/nuclei >/dev/null
+### In testing: Gobuster
+RUN go get github.com/OJ/gobuster >/dev/null
+
+# GoBuster temporary files wordlist
+RUN mkdir /opt/wordlists && \
+    wget https://raw.githubusercontent.com/Bo0oM/fuzz.txt/master/fuzz.txt -O /opt/wordlists/tempfiles.txt
+
+### On hold because of lacking batch functionality
+# # Dirsearch
+# RUN cd /opt && \
+#     git clone https://github.com/maurosoria/dirsearch.git
+
+# # Dirsearch wordlist
+# RUN curl -s https://raw.githubusercontent.com/xajkep/wordlists/master/discovery/php_files_only.txt | sed 's/.php/.%EXT%/g' > /opt/dirsearch/pathlist.txt
 
 # HTTPX
 RUN wget https://github.com/projectdiscovery/httpx/releases/download/v1.0.1/httpx_1.0.1_linux_amd64.tar.gz -q && \
@@ -57,13 +71,6 @@ RUN cd /opt && \
     mv amass_linux_amd64 amass && \
     rm amass_linux_amd64.zip && \
     cp /opt/amass/amass /usr/bin/amass
-
-# Dirsearch
-RUN cd /opt && \
-    git clone https://github.com/maurosoria/dirsearch.git
-
-# Dirsearch wordlist
-RUN curl -s https://raw.githubusercontent.com/xajkep/wordlists/master/discovery/php_files_only.txt | sed 's/.php/.%EXT%/g' > /opt/dirsearch/pathlist.txt
 
 # Nuclei-templates
 RUN cd /opt && \

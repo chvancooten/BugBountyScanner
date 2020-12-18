@@ -224,20 +224,40 @@ do
                     notify "Nuclei completed. Found *$(wc -l < "nuclei-$DOMAIN.txt")* (potential) issues, of which none are critical or high severity. Finding interesting files with Dirsearch..."
                 fi
             else
-                notify "Nuclei completed. No issues found. Finding interesting files with Dirsearch..."
+                notify "Nuclei completed. No issues found. Finding temporary files with GoBuster..."
             fi
         else
             echo "[-] SKIPPING NUCLEI"
         fi
 
-        if [ ! -f "dirsearch-$DOMAIN.txt" ] || [ "$overwrite" = true ]
+        if [ ! -d "gobuster" ] || [ "$overwrite" = true ]
         then
-            echo "[*] RUNNING DIRSEARCH..."
-            python3 "$toolsDir"/dirsearch/dirsearch.py -w "$toolsDir"/dirsearch/pathlist.txt -l "livedomains-$DOMAIN.txt" --simple-report "dirsearch-$DOMAIN.txt" -e php,aspx,html,zip,txt
-            notify "Dirsearch completed. Got *$(wc -l < "dirsearch-$DOMAIN.txt")* files. Spidering paths with GoSpider..."
+            echo "[*] RUNNING GOBUSTER..."
+            mkdir gobuster
+            cd gobuster || { echo "Something went wrong"; exit 1; }
+
+            while read -r dname;
+            do
+                filename=$(echo "${dname##*/}" | sed 's/:/./g')
+                gobuster -q -e -t 20 200,204 -u "$dname" -w "$toolsDir"/wordlists/tempfiles.txt -o "gobuster-$filename.txt"
+            done < "../livedomains-$DOMAIN.txt"
+
+            find . -size 0 -delete
+            notify "Gobuster completed. Got *$(cat ./* | wc -l)* files. Spidering paths with GoSpider..."
+            cd .. || { echo "Something went wrong"; exit 1; }
         else
-            echo "[-] SKIPPING DIRSEARCH"
+            echo "[-] SKIPPING GOBUSTER"
         fi
+
+        #### ON HOLD DUE TO LACKING BATCH FUNCTIONALITY IN DIRSEARCH
+        # if [ ! -f "dirsearch-$DOMAIN.txt" ] || [ "$overwrite" = true ]
+        # then
+        #     echo "[*] RUNNING DIRSEARCH..."
+        #     python3 "$toolsDir"/dirsearch/dirsearch.py -l "livedomains-$DOMAIN.txt" -w "$toolsDir"/dirsearch/pathlist.txt --plain-text-report="dirsearch-$DOMAIN.txt" -e php,aspx,html,zip,txt --plain-text-report="dirsearch-$DOMAIN.txt" -i 200 --random-user-agent
+        #     notify "Dirsearch completed. Got *$(wc -l < "dirsearch-$DOMAIN.txt")* files. Spidering paths with GoSpider..."
+        # else
+        #     echo "[-] SKIPPING DIRSEARCH"
+        # fi
 
         if [ ! -f "paths-$DOMAIN.txt" ] || [ "$overwrite" = true ]
         then
