@@ -216,12 +216,12 @@ do
                 critIssues="$(grep -c 'critical' < "nuclei-$DOMAIN.txt")"
                 if [ "$critIssues" -gt 0 ]
                 then
-                    notify "Nuclei completed. Found *$(wc -l < "nuclei-$DOMAIN.txt")* (potential) issues, of which *$critIssues* are critical, and *$highIssues* are high severity. Finding interesting files with Dirsearch..."
+                    notify "Nuclei completed. Found *$(wc -l < "nuclei-$DOMAIN.txt")* (potential) issues, of which *$critIssues* are critical, and *$highIssues* are high severity. Finding temporary files with GoBuster..."
                 elif [ "$highIssues" -gt 0 ]
                 then
-                    notify "Nuclei completed. Found *$(wc -l < "nuclei-$DOMAIN.txt")* (potential) issues, of which *$highIssues* are high severity. Finding interesting files with Dirsearch..."
+                    notify "Nuclei completed. Found *$(wc -l < "nuclei-$DOMAIN.txt")* (potential) issues, of which *$highIssues* are high severity. Finding temporary files with GoBuster..."
                 else
-                    notify "Nuclei completed. Found *$(wc -l < "nuclei-$DOMAIN.txt")* (potential) issues, of which none are critical or high severity. Finding interesting files with Dirsearch..."
+                    notify "Nuclei completed. Found *$(wc -l < "nuclei-$DOMAIN.txt")* (potential) issues, of which none are critical or high severity. Finding temporary files with GoBuster..."
                 fi
             else
                 notify "Nuclei completed. No issues found. Finding temporary files with GoBuster..."
@@ -243,7 +243,7 @@ do
             done < "../livedomains-$DOMAIN.txt"
 
             find . -size 0 -delete
-            notify "Gobuster completed. Got *$(cat ./* | wc -l)* files. Spidering paths with GoSpider..."
+            notify "GoBuster completed. Got *$(cat ./* | wc -l)* files. Spidering paths with GoSpider..."
             cd .. || { echo "Something went wrong"; exit 1; }
         else
             echo "[-] SKIPPING GOBUSTER"
