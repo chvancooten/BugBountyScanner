@@ -9,6 +9,8 @@ thorough=true
 notify=true
 overwrite=false
 
+source "./utils/screenshotReport.sh"
+
 function notify {
     if [ "$notify" = true ]
     then
@@ -179,6 +181,7 @@ do
     then
         echo "[*] RUNNING WEBSCREENSHOT..."
         webscreenshot -i "livedomains-$DOMAIN.txt" -o webscreenshot --no-error-file
+        generate_screenshot_report "$DOMAIN"
         notify "WebScreenshot completed! Took *$(find webscreenshot/* -maxdepth 0 | wc -l)* screenshots. Getting Wayback Machine path list with GAU..."
     else
         echo "[-] SKIPPING WEBSCREENSHOT"
