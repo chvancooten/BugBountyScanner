@@ -249,16 +249,6 @@ do
             echo "[-] SKIPPING GOBUSTER"
         fi
 
-        #### ON HOLD DUE TO LACKING BATCH FUNCTIONALITY IN DIRSEARCH
-        # if [ ! -f "dirsearch-$DOMAIN.txt" ] || [ "$overwrite" = true ]
-        # then
-        #     echo "[*] RUNNING DIRSEARCH..."
-        #     python3 "$toolsDir"/dirsearch/dirsearch.py -l "livedomains-$DOMAIN.txt" -w "$toolsDir"/dirsearch/pathlist.txt --plain-text-report="dirsearch-$DOMAIN.txt" -e php,aspx,html,zip,txt --plain-text-report="dirsearch-$DOMAIN.txt" -i 200 --random-user-agent
-        #     notify "Dirsearch completed. Got *$(wc -l < "dirsearch-$DOMAIN.txt")* files. Spidering paths with GoSpider..."
-        # else
-        #     echo "[-] SKIPPING DIRSEARCH"
-        # fi
-
         if [ ! -f "paths-$DOMAIN.txt" ] || [ "$overwrite" = true ]
         then
             echo "[*] RUNNING GOSPIDER..."
