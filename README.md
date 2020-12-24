@@ -5,6 +5,7 @@
 [![Docker Automated Badge](https://img.shields.io/docker/cloud/automated/chvancooten/bugbountyscanner)](https://hub.docker.com/r/chvancooten/bugbountyscanner/)
 [![Docker Image Size Badge](https://img.shields.io/docker/image-size/chvancooten/bugbountyscanner)](https://hub.docker.com/r/chvancooten/bugbountyscanner/)
 [![Docker Pulls Badge](https://img.shields.io/docker/pulls/chvancooten/bugbountyscanner)](https://hub.docker.com/r/chvancooten/bugbountyscanner/)
+[![PRs Welcome](https://img.shields.io/badge/Contributions-Welcome-brightgreen.svg)](http://makeapullrequest.com)
 
 A Bash script and Docker image for Bug Bounty reconnaissance, intended for headless use. Low on resources, high on information output.
 
@@ -68,6 +69,8 @@ If you prefer running the script manually, you can do so.
 
 > ℹ Note: The script (and images) have been built on -and tested for- Ubuntu 20.04. Your mileage may vary with other distro's, but given the dependencies are in order it should work on most Debian / Ubuntu-based installs.
 
+> ⚠️ Warning: The `setup.sh` installation script is currently broken and will error out. When BugBountyScanner is in a more stable state, I will update it to reflect the Dockerfile. Thanks for understanding :)
+
 ```
 git clone https://github.com/chvancooten/BugBountyScanner.git
 cd BugBountyScanner
@@ -99,6 +102,7 @@ options:
 -d, --domain <domain>     top domain to scan, can take multiple
 -o, --outputdirectory     output directory, defaults to current directory ('.')
 -w, --overwrite           overwrite existing files. Skip steps with existing files if not provided (default: false)
+-c, --collaborator-id     pass a BurpSuite Collaborator ID to Nuclei to detect blind vulns (default: not enabled)
  
 Note: 'ToolsDir', 'telegram_api_key' and 'telegram_chat_id' can be defined in .env or through Docker environment variables.
  
@@ -109,15 +113,17 @@ example:
 ## Features
 
 - Resource-efficient, suitable for running in the background for a prolonged period of time on e.g. a home server or Raspberry Pi
-- Telegram status notifications
-- Extensive CVE and misconfiguration detection with Nuclei
+- Telegram status notifications with per-command results
+- Extensive CVE and misconfiguration detection with Nuclei (optionally with detection of blind vulnerabilities via Burp Collaborator)
 - Subdomain enumeration and live webserver detection
 - Web screenshotting and crawling
 - Retrieving (hopefully sensitive) endpoints from the Wayback Machine
 - Identification of interesting parameterized URLs with Gf
-- Detection of LFI, SSTI, and Open Redirects in URL parameters
+- Enumeration of common "temporary" and forgotten files with GoBuster
+- Automatic detection of LFI, SSTI, and Open Redirects in URL parameters
 - Subdomain takeover detection
 - Port scanning (Top 1000 TCP + SNMP)
+- 'Quick Mode' for opsec-safe (ish) infrastructure reconnaisance
 
 ## Tools
 
@@ -126,6 +132,7 @@ example:
 - `Go`
 - `gau`
 - `Gf` (with `Gf-Patterns`)
+- `GoBuster`
 - `gospider`
 - `httpx`
 - `nmap`

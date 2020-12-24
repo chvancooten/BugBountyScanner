@@ -25,19 +25,6 @@ function notify {
     fi
 }
 
-if [ -f "$scriptDir/.env" ]
-then
-    set -a
-    . .env
-    set +a
-fi
-
-if [ -z "$telegram_api_key" ] || [ -z "$telegram_chat_id" ]
-then
-    echo "[i] \$telegram_api_key and \$telegram_chat_id variables not found, disabling notifications..."
-    notify=false
-fi
-
 for arg in "$@"
 do
     case $arg in
@@ -53,6 +40,7 @@ do
         echo "-d, --domain <domain>     top domain to scan, can take multiple"
         echo "-o, --outputdirectory     output directory, defaults to current directory ('.')"
         echo "-w, --overwrite           overwrite existing files. Skip steps with existing files if not provided (default: false)"
+        echo "-c, --collaborator-id     pass a BurpSuite Collaborator ID to Nuclei to detect blind vulns (default: not enabled)"
         echo " "
         echo "Note: 'ToolsDir', 'telegram_api_key' and 'telegram_chat_id' can be defined in .env or through Docker environment variables."
         echo " "
@@ -82,8 +70,26 @@ do
         -w|--overwrite)
         overwrite=true
         shift
+        ;;
+        -c|--collaborator-id)
+        collabID="$2"
+        shift
+        shift
     esac
 done
+
+if [ -f "$scriptDir/.env" ]
+then
+    set -a
+    . .env
+    set +a
+fi
+
+if [ -z "$telegram_api_key" ] || [ -z "$telegram_chat_id" ]
+then
+    echo "[i] \$telegram_api_key and \$telegram_chat_id variables not found, disabling notifications..."
+    notify=false
+fi
 
 if [ ! -d "$baseDir" ]
 then
@@ -193,22 +199,54 @@ do
     if [ "$thorough" = true ] ; then
         if [ ! -f "nuclei-$DOMAIN.txt" ] || [ "$overwrite" = true ]
         then
-            echo "[*] RUNNING NUCLEI..."
-            notify "Detecting known vulnerabilities with Nuclei..."
-            nuclei -c 150 -l "livedomains-$DOMAIN.txt" -t "$toolsDir"'/nuclei-templates/' -severity low,medium,high,critical -o "nuclei-$DOMAIN.txt" -H "User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:72.0) Gecko/20100101 Firefox/72.0"
-            highIssues="$(grep -c 'high' < "nuclei-$DOMAIN.txt")"
-            critIssues="$(grep -c 'critical' < "nuclei-$DOMAIN.txt")"
-            if [ "$critIssues" -gt 0 ]
+            if [ -z "$collabID" ]
             then
-            notify "Nuclei completed. Found *$(wc -l < "nuclei-$DOMAIN.txt")* (potential) issues, of which *$critIssues* are critical, and *$highIssues* are high severity. Spidering paths with GoSpider..."
-            elif [ "$highIssues" -gt 0 ]
-            then
-            notify "Nuclei completed. Found *$(wc -l < "nuclei-$DOMAIN.txt")* (potential) issues, of which *$highIssues* are high severity. Spidering paths with GoSpider..."
+                echo "[*] RUNNING NUCLEI (COLLABORATOR DISABLED)..."
+                notify "Detecting known vulnerabilities with Nuclei (collaborator disabled)..."
+                nuclei -c 150 -l "livedomains-$DOMAIN.txt" -t "$toolsDir"'/nuclei-templates/' -severity low,medium,high,critical -o "nuclei-$DOMAIN.txt"
             else
-            notify "Nuclei completed. Found *$(wc -l < "nuclei-$DOMAIN.txt")* (potential) issues, of which none are critical or high severity. Spidering paths with GoSpider..."
+                echo "[*] RUNNING NUCLEI (COLLABORATOR ENABLED)..."
+                notify "Detecting known vulnerabilities with Nuclei (collaborator enabled)..."
+                nuclei -c 150 -l "livedomains-$DOMAIN.txt" -t "$toolsDir"'/nuclei-templates/' -severity low,medium,high,critical -o "nuclei-$DOMAIN.txt" -burp-collaborator-biid "$collabID"
+            fi
+            
+            if [ -f "nuclei-$DOMAIN.txt" ]
+            then
+                highIssues="$(grep -c 'high' < "nuclei-$DOMAIN.txt")"
+                critIssues="$(grep -c 'critical' < "nuclei-$DOMAIN.txt")"
+                if [ "$critIssues" -gt 0 ]
+                then
+                    notify "Nuclei completed. Found *$(wc -l < "nuclei-$DOMAIN.txt")* (potential) issues, of which *$critIssues* are critical, and *$highIssues* are high severity. Finding temporary files with GoBuster..."
+                elif [ "$highIssues" -gt 0 ]
+                then
+                    notify "Nuclei completed. Found *$(wc -l < "nuclei-$DOMAIN.txt")* (potential) issues, of which *$highIssues* are high severity. Finding temporary files with GoBuster..."
+                else
+                    notify "Nuclei completed. Found *$(wc -l < "nuclei-$DOMAIN.txt")* (potential) issues, of which none are critical or high severity. Finding temporary files with GoBuster..."
+                fi
+            else
+                notify "Nuclei completed. No issues found. Finding temporary files with GoBuster..."
             fi
         else
             echo "[-] SKIPPING NUCLEI"
+        fi
+
+        if [ ! -d "gobuster" ] || [ "$overwrite" = true ]
+        then
+            echo "[*] RUNNING GOBUSTER..."
+            mkdir gobuster
+            cd gobuster || { echo "Something went wrong"; exit 1; }
+
+            while read -r dname;
+            do
+                filename=$(echo "${dname##*/}" | sed 's/:/./g')
+                gobuster -q -e -t 20 -s 200,204 -u "$dname" -w "$toolsDir"/wordlists/tempfiles.txt -o "gobuster-$filename.txt"
+            done < "../livedomains-$DOMAIN.txt"
+
+            find . -size 0 -delete
+            notify "GoBuster completed. Got *$(cat ./* | wc -l)* files. Spidering paths with GoSpider..."
+            cd .. || { echo "Something went wrong"; exit 1; }
+        else
+            echo "[-] SKIPPING GOBUSTER"
         fi
 
         if [ ! -f "paths-$DOMAIN.txt" ] || [ "$overwrite" = true ]
@@ -245,18 +283,6 @@ do
             gf lfi < "paths-$DOMAIN.txt" > "check-manually/local-file-inclusion.txt"
             gf ssti < "paths-$DOMAIN.txt" > "check-manually/server-side-template-injection.txt"
             notify "Done! Gathered a total of *$(wc -l < "paths-$DOMAIN.txt")* paths, of which *$(cat check-manually/* | wc -l)* possibly exploitable. Testing for Server-Side Template Injection..."
-
-            # echo "[*] CHECKING LIVENESS OF GF-IDENTIFIED ENDPOINTS (TO CHECK MANUALLY)..."
-            # httpx -silent -no-color -l "check-manually/server-side-request-forgery.txt" -threads 25 -o "check-manually/live/server-side-request-forgery.txt"
-            # httpx -silent -no-color -l "check-manually/cross-site-scripting.txt" -threads 25 -o "check-manually/live/cross-site-scripting.txt"
-            # httpx -silent -no-color -l "check-manually/open-redirect.txt" -threads 25 -o "check-manually/live/open-redirect.txt"
-            # httpx -silent -no-color -l "check-manually/rce.txt" -threads 25 -o "check-manually/live/rce.txt"
-            # httpx -silent -no-color -l "check-manually/insecure-direct-object-reference.txt" -threads 25 -o "check-manually/live/insecure-direct-object-reference.txt"
-            # httpx -silent -no-color -l "check-manually/sql-injection.txt" -threads 25 -o "check-manually/live/sql-injection.txt"
-            # httpx -silent -no-color -l "check-manually/local-file-inclusion.txt" -threads 25 -o "check-manually/live/local-file-inclusion.txt"
-            # httpx -silent -no-color -l "check-manually/server-side-template-injection.txt" -threads 25 -o "check-manually/live/server-side-template-injection.txt"
-            # rm check-manually/* && mv check-manually/live/* check-manually/ && rm -rf check-manually/live/
-            # notify "Done! Identified *$(cat check-manually/* | wc -l)* live endpoints to check. Testing for Server-Side Template Injection..."
         else
             echo "[-] SKIPPING GF"
         fi
