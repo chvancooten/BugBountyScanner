@@ -113,15 +113,17 @@ example:
 ## Features
 
 - Resource-efficient, suitable for running in the background for a prolonged period of time on e.g. a home server or Raspberry Pi
-- Telegram status notifications
-- Extensive CVE and misconfiguration detection with Nuclei
+- Telegram status notifications with per-command results
+- Extensive CVE and misconfiguration detection with Nuclei (optionally with detection of blind vulnerabilities via Burp Collaborator)
 - Subdomain enumeration and live webserver detection
 - Web screenshotting and crawling
 - Retrieving (hopefully sensitive) endpoints from the Wayback Machine
 - Identification of interesting parameterized URLs with Gf
-- Detection of LFI, SSTI, and Open Redirects in URL parameters
+- Enumeration of common "temporary" and forgotten files with GoBuster
+- Automatic detection of LFI, SSTI, and Open Redirects in URL parameters
 - Subdomain takeover detection
 - Port scanning (Top 1000 TCP + SNMP)
+- 'Quick Mode' for opsec-safe (ish) infrastructure reconnaisance
 
 ## Tools
 
@@ -130,6 +132,7 @@ example:
 - `Go`
 - `gau`
 - `Gf` (with `Gf-Patterns`)
+- `GoBuster`
 - `gospider`
 - `httpx`
 - `nmap`
