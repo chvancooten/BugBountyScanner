@@ -43,16 +43,8 @@ RUN go get -u github.com/tomnomnom/gf >/dev/null
 RUN go get -u github.com/jaeles-project/gospider >/dev/null
 RUN go get -u github.com/tomnomnom/qsreplace >/dev/null
 RUN go get -u github.com/haccer/subjack >/dev/null
-# RUN go get -u github.com/projectdiscovery/nuclei/v2/cmd/nuclei >/dev/null #TEMPORARILY DISABLED DUE TO BUILD ERRORS ON NUCLEI SIDE
+RUN go get github.com/projectdiscovery/nuclei/v2/cmd/nuclei >/dev/null
 RUN go get github.com/OJ/gobuster >/dev/null
-
-### TEMPORARY WORKAROUND to build Nuclei 
-# Gets static binary for Nuclei v2.2.0
-RUN wget https://github.com/projectdiscovery/nuclei/releases/download/v2.2.0/nuclei_2.2.0_linux_amd64.tar.gz
-RUN tar -xvf nuclei_2.2.0_linux_amd64.tar.gz nuclei
-RUN mv ./nuclei /usr/bin/nuclei
-RUN rm nuclei_2.2.0_linux_amd64.tar.gz
-### END TEMPORARY WORKAROUND
 
 # GoBuster temporary files wordlist
 RUN mkdir /opt/wordlists && \
@@ -91,6 +83,8 @@ RUN cd /opt && \
 
 RUN apt remove unzip -y &>/dev/null
 
-COPY ./BugBountyScanner.sh /root
-COPY ./.env.example /root
+COPY BugBountyScanner.sh /root
+COPY utils /root/utils
+COPY assets /root/assets
+COPY .env.example /root
 RUN chmod +x /root/BugBountyScanner.sh

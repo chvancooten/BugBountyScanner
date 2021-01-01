@@ -69,7 +69,7 @@ If you prefer running the script manually, you can do so.
 
 > ℹ Note: The script (and images) have been built on -and tested for- Ubuntu 20.04. Your mileage may vary with other distro's, but given the dependencies are in order it should work on most Debian / Ubuntu-based installs.
 
-> ⚠️ Warning: The `setup.sh` installation script is currently broken and will error out. When BugBountyScanner is in a more stable state, I will update it to reflect the Dockerfile. Thanks for understanding :)
+> ⚠️ Warning: The `setup.sh` installation script is currently unmaintained and will likely error out. When BugBountyScanner is in a more stable state, I will update it to reflect the Dockerfile. Thanks for understanding :)
 
 ```
 git clone https://github.com/chvancooten/BugBountyScanner.git
@@ -91,7 +91,7 @@ Use `--help` or `-h` for a brief help menu.
 
 ```
 root@dockerhost:~# ./BugBountyScanner.sh -h
-BugBountyHunter - Automated Bug Bounty reconnaisance script
+BugBountyHunter - Automated Bug Bounty reconnaissance script
  
 ./BugBountyScanner.sh [options]
  
@@ -100,9 +100,9 @@ options:
 -t, --toolsdir            tools directory (no trailing /), defaults to '/opt'
 -q, --quick               perform quick recon only (default: false)
 -d, --domain <domain>     top domain to scan, can take multiple
--o, --outputdirectory     output directory, defaults to current directory ('.')
+-o, --outputdirectory     parent output directory, defaults to current directory (subfolders will be created per domain)
 -w, --overwrite           overwrite existing files. Skip steps with existing files if not provided (default: false)
--c, --collaborator-id     pass a BurpSuite Collaborator ID to Nuclei to detect blind vulns (default: not enabled)
+-c, --collaborator-id     pass a BurpSuite Collaborator BIID to Nuclei to detect blind vulns (default: not enabled)
  
 Note: 'ToolsDir', 'telegram_api_key' and 'telegram_chat_id' can be defined in .env or through Docker environment variables.
  
@@ -110,20 +110,22 @@ example:
 ./BugBountyScanner.sh --quick -d google.com -d uber.com -t /opt
 ```
 
+> **A note on using Burp Collaborator:** Nuclei requires your Burp Collaborator's "BIID". If you are using Burp's hosted Collaborator servers, you can acquire this ID by setting 'Project Options -> Misc -> Poll over unencrypted HTTP' for the server. Then poll the server once from your client, and intercept the `?biid=` parameter from the HTTP request using a second Burp client or Wireshark. This is the ID you need (make sure to URL-decode).
+
 ## Features
 
-- Resource-efficient, suitable for running in the background for a prolonged period of time on e.g. a home server or Raspberry Pi
+- Resource-efficient, suitable for running in the background for a prolonged period of time on a low-resource VPS, home server, or Raspberry Pi
 - Telegram status notifications with per-command results
 - Extensive CVE and misconfiguration detection with Nuclei (optionally with detection of blind vulnerabilities via Burp Collaborator)
 - Subdomain enumeration and live webserver detection
-- Web screenshotting and crawling
+- Web screenshotting and crawling, HTML screenshot report generation
 - Retrieving (hopefully sensitive) endpoints from the Wayback Machine
 - Identification of interesting parameterized URLs with Gf
 - Enumeration of common "temporary" and forgotten files with GoBuster
 - Automatic detection of LFI, SSTI, and Open Redirects in URL parameters
 - Subdomain takeover detection
 - Port scanning (Top 1000 TCP + SNMP)
-- 'Quick Mode' for opsec-safe (ish) infrastructure reconnaisance
+- 'Quick Mode' for opsec-safe (ish) infrastructure reconnaissance
 
 ## Tools
 
