@@ -85,5 +85,6 @@ RUN apt remove unzip -y &>/dev/null
 
 COPY BugBountyScanner.sh /root
 COPY utils /root/utils
+COPY assets /root/assets
 COPY .env.example /root
 RUN chmod +x /root/BugBountyScanner.sh
