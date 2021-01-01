@@ -100,7 +100,7 @@ options:
 -t, --toolsdir            tools directory (no trailing /), defaults to '/opt'
 -q, --quick               perform quick recon only (default: false)
 -d, --domain <domain>     top domain to scan, can take multiple
--o, --outputdirectory     output directory, defaults to current directory ('.')
+-o, --outputdirectory     parent output directory, defaults to current directory (subfolders will be created per domain)
 -w, --overwrite           overwrite existing files. Skip steps with existing files if not provided (default: false)
 -c, --collaborator-id     pass a BurpSuite Collaborator BIID to Nuclei to detect blind vulns (default: not enabled)
  

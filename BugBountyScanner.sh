@@ -21,7 +21,13 @@ function notify {
         fi
 
         # Format string to escape special characters and send message through Telegram API.
-        message=`echo -ne "*BugBountyAutomator [$DOMAIN]:* $1" | sed 's/[^a-zA-Z 0-9*_]/\\\\&/g'`
+        if [ -z "$DOMAIN" ]
+        then
+            message=`echo -ne "*BugBountyScanner:* $1" | sed 's/[^a-zA-Z 0-9*_]/\\\\&/g'`
+        else
+            message=`echo -ne "*BugBountyScanner [$DOMAIN]:* $1" | sed 's/[^a-zA-Z 0-9*_]/\\\\&/g'`
+        fi
+    
         curl -s -X POST "https://api.telegram.org/bot$telegram_api_key/sendMessage" -d chat_id="$telegram_chat_id" -d text="$message" -d parse_mode="MarkdownV2" &> /dev/null
         lastNotified=$(date +%s)
     fi
@@ -31,7 +37,7 @@ for arg in "$@"
 do
     case $arg in
         -h|--help)
-        echo "BugBountyHunter - Automated Bug Bounty reconnaisance script"
+        echo "BugBountyHunter - Automated Bug Bounty reconnaissance script"
         echo " "
         echo "$0 [options]"
         echo " "
@@ -40,7 +46,7 @@ do
         echo "-t, --toolsdir            tools directory (no trailing /), defaults to '/opt'"
         echo "-q, --quick               perform quick recon only (default: false)"
         echo "-d, --domain <domain>     top domain to scan, can take multiple"
-        echo "-o, --outputdirectory     output directory, defaults to current directory ('.')"
+        echo "-o, --outputdirectory     parent output directory, defaults to current directory (subfolders will be created per domain)"
         echo "-w, --overwrite           overwrite existing files. Skip steps with existing files if not provided (default: false)"
         echo "-c, --collaborator-id     pass a BurpSuite Collaborator ID to Nuclei to detect blind vulns (default: not enabled)"
         echo " "
@@ -129,8 +135,12 @@ fi
 
 cd "$baseDir" || { echo "Something went wrong"; exit 1; }
 
+# Enable logging for stdout and stderr (timestamp format [dd/mm/yy hh:mm:ss])
+LOG_FILE="./BugBountyScanner-$(date +'%Y%m%d-%T').log"
+exec > >(while read -r line; do printf '%s %s\n' "[$(date +'%D %T')]" "$line" | tee -a "${LOG_FILE}"; done) 2>&1
+
 echo "[*] STARTING RECON."
-notify "Starting recon on *${#DOMAINS[@]}* subdomains."
+notify "Starting recon on *${#DOMAINS[@]}* domains."
 
 for DOMAIN in "${DOMAINS[@]}"
 do
@@ -277,6 +287,7 @@ do
         then
             echo "[*] GETTING INTERESTING PARAMETERS WITH GF..."
             mkdir "check-manually"
+            # Use GF to identify "suspicious" endpoints that may be vulnerable (automatic checks below)
             gf ssrf < "paths-$DOMAIN.txt" > "check-manually/server-side-request-forgery.txt"
             gf xss < "paths-$DOMAIN.txt" > "check-manually/cross-site-scripting.txt"
             gf redirect < "paths-$DOMAIN.txt" > "check-manually/open-redirect.txt"
