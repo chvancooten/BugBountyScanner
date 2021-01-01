@@ -3,6 +3,8 @@ FROM ubuntu:20.04
 LABEL maintainer="Cas van Cooten"
 
 ARG DEBIAN_FRONTEND=noninteractive
+WORKDIR /root
+
 ENV TZ=Europe/Amsterdam
 RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
 
