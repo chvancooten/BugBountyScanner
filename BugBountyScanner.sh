@@ -258,8 +258,15 @@ do
             done < "../livedomains-$DOMAIN.txt"
 
             find . -size 0 -delete
-            notify "GoBuster completed. Got *$(cat ./* | wc -l)* files. Spidering paths with GoSpider..."
-            cd .. || { echo "Something went wrong"; exit 1; }
+
+            if [ "$(ls -A .)" ]; then
+                notify "GoBuster completed. Got *$(cat ./* | wc -l)* files. Spidering paths with GoSpider..."
+                cd .. || { echo "Something went wrong"; exit 1; }
+            else
+                notify "GoBuster completed. No temporary files identified. Spidering paths with GoSpider..."
+                cd .. || { echo "Something went wrong"; exit 1; }
+                rm -rf gobuster
+            fi   
         else
             echo "[-] SKIPPING GOBUSTER"
         fi

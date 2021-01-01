@@ -10,4 +10,4 @@ fi
 
 echo "[*] Loading live target hosts into burp, make sure burp proxy is running..."
 
-cat $file | /root/go/bin/httpx -silent -no-color -http-proxy httpx://127.0.0.1:8080 -follow-redirects
+httpx -silent -no-color -http-proxy httpx://127.0.0.1:8080 -follow-redirects -l "$file"

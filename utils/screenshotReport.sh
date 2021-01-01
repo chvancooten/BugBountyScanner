@@ -4,7 +4,7 @@
 generate_screenshot_report() {
 
 domain=$1
-cd "webscreenshot"
+cd "webscreenshot" || { echo "Something went wrong"; exit 1; }
 
 if [ -e screenshotReport.html ]
 then
