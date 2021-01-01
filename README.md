@@ -118,7 +118,7 @@ example:
 - Telegram status notifications with per-command results
 - Extensive CVE and misconfiguration detection with Nuclei (optionally with detection of blind vulnerabilities via Burp Collaborator)
 - Subdomain enumeration and live webserver detection
-- Web screenshotting and crawling
+- Web screenshotting and crawling, HTML screenshot report generation
 - Retrieving (hopefully sensitive) endpoints from the Wayback Machine
 - Identification of interesting parameterized URLs with Gf
 - Enumeration of common "temporary" and forgotten files with GoBuster
