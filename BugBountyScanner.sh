@@ -128,8 +128,9 @@ echo "$PATH" | grep -q "$HOME/go/bin" || export PATH=$PATH:$HOME/go/bin
 
 if command -v nuclei &> /dev/null # Very crude dependency check :D
 then
-	echo "[*] DEPENDENCIES FOUND. NOT INSTALLING."
+	echo "[*] Dependencies found."
 else
+    echo "[*] Dependencies not found, running install script..."
     bash "$scriptDir/setup.sh" -t "$toolsDir"
 fi
 
