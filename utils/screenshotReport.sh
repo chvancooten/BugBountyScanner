@@ -61,6 +61,7 @@ cat >> ../screenshotReport.html << HTML
   <img src="./webscreenshot/$i" alt="$caption"/>
   </a>
   <br>
+  <br>
 </div>
 HTML
 
