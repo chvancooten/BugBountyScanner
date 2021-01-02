@@ -10,7 +10,12 @@ if [ $? -ne 0 ]; then
 fi
 
 # Amass
-amass -version
+# DEBUG
+which amass
+find / -name "amass" 2>/dev/null
+echo GOPATH: $GOPATH
+echo GOROOT: $GOROOT
+amass -version &> /dev/null
 if [ $? -ne 0 ]; then
     echo "Error - Amass not (properly) installed"
     exit 1
