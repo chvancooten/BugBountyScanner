@@ -148,7 +148,7 @@ do
     mkdir -p "$DOMAIN"
     cd "$DOMAIN" || { echo "Something went wrong"; exit 1; }
 
-    cp -r "$scriptDir/assets" .
+    cp -r "$scriptDir/dist" .
 
     echo "[*] RUNNING RECON ON $DOMAIN."
     notify "Starting recon on $DOMAIN. Enumerating subdomains with Amass..."

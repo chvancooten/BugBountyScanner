@@ -11,7 +11,7 @@ RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
 COPY setup.sh /root
 COPY BugBountyScanner.sh /root
 COPY utils /root/utils
-COPY assets /root/assets
+COPY dist /root/dist
 COPY .env.example /root
 
 ENV GOROOT=/usr/local/go
