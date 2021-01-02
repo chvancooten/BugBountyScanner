@@ -10,7 +10,7 @@ if [ $? -ne 0 ]; then
 fi
 
 # Amass
-amass -version &> /dev/null
+amass -version
 if [ $? -ne 0 ]; then
     echo "Error - Amass not (properly) installed"
     exit 1
