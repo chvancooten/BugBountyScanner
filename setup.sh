@@ -113,15 +113,14 @@ cp "$toolsDir"/Gf-Patterns/*.json "$homeDir"/.gf
 
 # Persist configured environment variables via global profile.d script
 echo "[*] Setting environment variables..."
-cat >> "$homeDir"/.bashrc << FINI
-export GOROOT=/usr/local/go
-export GOPATH=$homeDir/go
-export PATH=$PATH:$GOPATH/bin:$GOROOT/bin
-export GO111MODULE=on
-FINI
+{ echo "export GOROOT=/usr/local/go";
+echo "export GOPATH=$homeDir/go";
+echo 'export PATH=$PATH:$GOPATH/bin:$GOROOT/bin';
+echo "export GO111MODULE=on"; } >> "$homeDir"/.bashrc
 
 # Cleanup
 apt remove unzip -y &>/dev/null
+cd "$baseDir" || { echo "Something went wrong"; exit 1; }
 
 echo "[*] SETUP FINISHED."
 exit 0
