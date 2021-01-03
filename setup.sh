@@ -62,14 +62,20 @@ echo "[*] Installing WebScreenshot via pip..."
 pip3 install webscreenshot >/dev/null
 
 # Golang
-echo "[*] Installing Golang..."
-wget --quiet https://dl.google.com/go/go1.14.7.linux-amd64.tar.gz
-tar -xvf go1.14.7.linux-amd64.tar.gz >/dev/null
-rm -rf ./go1.14.7.linux-amd64.tar.gz >/dev/null
-mv go /usr/local 
-export GOROOT="/usr/local/go"
-export GOPATH="$homeDir/go"
-export PATH="$PATH:${GOPATH}/bin:${GOROOT}/bin:${PATH}"
+go version &> /dev/null
+if [ $? -ne 0 ]; then
+    echo "[*] Installing Golang..."
+    wget --quiet https://dl.google.com/go/go1.14.7.linux-amd64.tar.gz
+    tar -xvf go1.14.7.linux-amd64.tar.gz >/dev/null
+    rm -rf ./go1.14.7.linux-amd64.tar.gz >/dev/null
+    mv go /usr/local 
+    export GOROOT="/usr/local/go"
+    export GOPATH="$homeDir/go"
+    export PATH="$PATH:${GOPATH}/bin:${GOROOT}/bin:${PATH}"
+else
+    echo "[*] Skipping Golang install, already installed."
+    echo "[!] Note: This may cause errors. If it does, check your Golang version and settings."
+fi
 
 # Go packages
 echo "[*] Installing various Go packages..."
