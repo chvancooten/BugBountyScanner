@@ -22,6 +22,6 @@ jobs:
     - name: Run CI tests
       run: bash ./utils/runTests.sh
       env:
-      GOROOT: /usr/local/go
-      GOPATH: /root/go
-      PATH: /root/go/bin:/usr/local/go/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+        GOROOT: /usr/local/go
+        GOPATH: /root/go
+        PATH: /root/go/bin:/usr/local/go/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
