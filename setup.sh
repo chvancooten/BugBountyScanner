@@ -62,14 +62,20 @@ echo "[*] Installing WebScreenshot via pip..."
 pip3 install webscreenshot >/dev/null
 
 # Golang
-echo "[*] Installing Golang..."
-wget --quiet https://dl.google.com/go/go1.14.7.linux-amd64.tar.gz
-tar -xvf go1.14.7.linux-amd64.tar.gz >/dev/null
-rm -rf ./go1.14.7.linux-amd64.tar.gz >/dev/null
-mv go /usr/local 
-export GOROOT="/usr/local/go"
-export GOPATH="$homeDir/go"
-export PATH="$PATH:${GOPATH}/bin:${GOROOT}/bin:${PATH}"
+go version &> /dev/null
+if [ $? -ne 0 ]; then
+    echo "[*] Installing Golang..."
+    wget --quiet https://dl.google.com/go/go1.14.7.linux-amd64.tar.gz
+    tar -xvf go1.14.7.linux-amd64.tar.gz >/dev/null
+    rm -rf ./go1.14.7.linux-amd64.tar.gz >/dev/null
+    mv go /usr/local 
+    export GOROOT="/usr/local/go"
+    export GOPATH="$homeDir/go"
+    export PATH="$PATH:${GOPATH}/bin:${GOROOT}/bin:${PATH}"
+else
+    echo "[*] Skipping Golang install, already installed."
+    echo "[!] Note: This may cause errors. If it does, check your Golang version and settings."
+fi
 
 # Go packages
 echo "[*] Installing various Go packages..."
@@ -81,6 +87,11 @@ go get -u github.com/tomnomnom/qsreplace &>/dev/null
 go get -u github.com/haccer/subjack &>/dev/null
 go get github.com/projectdiscovery/nuclei/v2/cmd/nuclei &>/dev/null
 go get github.com/OJ/gobuster &>/dev/null
+
+# Subjack fingerprints file
+echo "[*] Installing Subjack fingerprints..."
+mkdir "$toolsDir/subjack"
+wget https://raw.githubusercontent.com/haccer/subjack/master/fingerprints.json -O $toolsDir/subjack/fingerprints.json -q
 
 # GoBuster temporary files wordlist
 echo "[*] Installing GoBuster wordlist..."
@@ -113,15 +124,25 @@ cp "$toolsDir"/Gf-Patterns/*.json "$homeDir"/.gf
 
 # Persist configured environment variables via global profile.d script
 echo "[*] Setting environment variables..."
-cat >> "$homeDir"/.bashrc << FINI
-export GOROOT=/usr/local/go
-export GOPATH=$homeDir/go
-export PATH=$PATH:$GOPATH/bin:$GOROOT/bin
-export GO111MODULE=on
-FINI
+if [ -f "$homeDir"/.bashrc ]
+then
+    { echo "export GOROOT=/usr/local/go";
+    echo "export GOPATH=$homeDir/go";
+    echo 'export PATH=$PATH:$GOPATH/bin:$GOROOT/bin';
+    echo "export GO111MODULE=on"; } >> "$homeDir"/.bashrc
+fi
+
+if [ -f "$homeDir"/.zshrc ]
+then
+    { echo "export GOROOT=/usr/local/go";
+    echo "export GOPATH=$homeDir/go";
+    echo 'export PATH=$PATH:$GOPATH/bin:$GOROOT/bin';
+    echo "export GO111MODULE=on"; } >> "$homeDir"/.zshrc
+fi
 
 # Cleanup
 apt remove unzip -y &>/dev/null
+cd "$baseDir" || { echo "Something went wrong"; exit 1; }
 
 echo "[*] SETUP FINISHED."
 exit 0

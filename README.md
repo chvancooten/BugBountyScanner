@@ -67,18 +67,14 @@ docker build .
 
 If you prefer running the script manually, you can do so.
 
-> ℹ Note: The script (and images) have been built on -and tested for- Ubuntu 20.04. Your mileage may vary with other distro's, but given the dependencies are in order it should work on most Debian / Ubuntu-based installs.
+> ℹ Note: The script has been built on -and tested for- Ubuntu 20.04. Your mileage may vary with other distro's, but it should work on most Debian-based installs (such as Kali Linux).
 
 ```
 git clone https://github.com/chvancooten/BugBountyScanner.git
 cd BugBountyScanner
-cp .env.example .env
-# Edit accordingly
-chmod +x BugBountyScanner.sh
-# Setup is automatically triggered, but can be manually run
-# Note: The setup script is deprecated for the Docker installation
-chmod +x setup.sh
-./setup.sh -t /custom/tools/dir
+cp .env.example .env # Edit accordingly
+chmod +x BugBountyScanner.sh setup.sh
+./setup.sh -t /custom/tools/dir # Setup is automatically triggered, but can be manually run
 ./BugBountyScanner.sh --help
 ./BugBountyScanner.sh -d target1.com -d target2.net -t /custom/tools/dir --quick
 ```

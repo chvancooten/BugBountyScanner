@@ -1,4 +1,4 @@
-name: Docker Build
+name: Build and Test Docker Container
 
 on:
   push:
@@ -9,13 +9,12 @@ on:
     - cron:  '0 4 * * SAT'
 
 jobs:
-
   build:
-
     runs-on: ubuntu-20.04
-
     steps:
     - name: Checkout code into workspace directory
       uses: actions/checkout@v2
     - name: Build the Docker image
-      run: docker build .
+      run: docker build . -t bugbountybox-build
+    - name: Start a container with the built image and run tests script
+      run: docker run -i bugbountybox-build bash < ./utils/runTests.sh
