@@ -19,9 +19,3 @@ jobs:
       uses: actions/checkout@v2
     - name: Build the Docker image
       run: docker build .
-    - name: Run CI tests
-      run: bash ./utils/runTests.sh
-      env:
-        GOROOT: /usr/local/go
-        GOPATH: /root/go
-        PATH: /root/go/bin:/usr/local/go/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin

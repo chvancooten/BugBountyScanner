@@ -1,4 +1,5 @@
 #!/bin/bash
+### CURRENTLY NOT IN USE DUE TO INCOMPATIBILITY WITH GIHUB CI
 # Test script to validate the correctness of Dockerized Github CI builds
 
 echo "ENVIRONMENT:"
