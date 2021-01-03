@@ -76,7 +76,6 @@ cp .env.example .env
 # Edit accordingly
 chmod +x BugBountyScanner.sh
 # Setup is automatically triggered, but can be manually run
-# Note: The setup script is deprecated for the Docker installation
 chmod +x setup.sh
 ./setup.sh -t /custom/tools/dir
 ./BugBountyScanner.sh --help
