@@ -175,8 +175,7 @@ do
     if [ ! -f "subjack-$DOMAIN.txt" ] || [ "$overwrite" = true ]
     then
         echo "[*] RUNNING SUBJACK..."
-        # Manually find 'fingerprints.json' file, as it somehow cannot find it after installing through Docker.
-        subjack -w "domains-$DOMAIN.txt" -t 100 -c "$(find / -name "fingerprints.json" 2>/dev/null)" -o "subjack-$DOMAIN.txt" -a
+        subjack -w "domains-$DOMAIN.txt" -t 100 -c "$toolsDir/subjack/fingerprints.json" -o "subjack-$DOMAIN.txt" -a
         if [ -f "subjack-$DOMAIN.txt" ]; then
             echo "[+] HIJACKABLE SUBDOMAINS FOUND!"
             notify "SubJack completed. One or more hijackable subdomains found!"

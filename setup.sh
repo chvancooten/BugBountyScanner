@@ -88,6 +88,11 @@ go get -u github.com/haccer/subjack &>/dev/null
 go get github.com/projectdiscovery/nuclei/v2/cmd/nuclei &>/dev/null
 go get github.com/OJ/gobuster &>/dev/null
 
+# Subjack fingerprints file
+echo "[*] Installing Subjack fingerprints..."
+mkdir "$toolsDir/subjack"
+wget https://raw.githubusercontent.com/haccer/subjack/master/fingerprints.json -O $toolsDir/subjack/fingerprints.json -q
+
 # GoBuster temporary files wordlist
 echo "[*] Installing GoBuster wordlist..."
 mkdir "$toolsDir/wordlists"
