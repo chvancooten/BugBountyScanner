@@ -1,6 +1,9 @@
 #!/bin/bash
 # Test script to validate the correctness of Dockerized Github CI builds
 
+echo "ENVIRONMENT:"
+env
+
 # Validate correct installation of key tools
 # Golang
 go version &> /dev/null
@@ -10,11 +13,6 @@ if [ $? -ne 0 ]; then
 fi
 
 # Amass
-# DEBUG
-which amass
-find / -name "amass" 2>/dev/null
-echo GOPATH: $GOPATH
-echo GOROOT: $GOROOT
 amass -version &> /dev/null
 if [ $? -ne 0 ]; then
     echo "Error - Amass not (properly) installed"
