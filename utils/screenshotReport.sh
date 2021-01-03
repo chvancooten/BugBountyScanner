@@ -17,7 +17,7 @@ cat >> ../screenshotReport.html << HEADER
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<link rel="stylesheet" href="./assets/github-markdown.css">
+<link rel="stylesheet" href="./dist/github-markdown.css">
 <title>Screenshots for $domain</title>
 <style>
 

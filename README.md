@@ -69,8 +69,6 @@ If you prefer running the script manually, you can do so.
 
 > ℹ Note: The script (and images) have been built on -and tested for- Ubuntu 20.04. Your mileage may vary with other distro's, but given the dependencies are in order it should work on most Debian / Ubuntu-based installs.
 
-> ⚠️ Warning: The `setup.sh` installation script is currently unmaintained and will likely error out. When BugBountyScanner is in a more stable state, I will update it to reflect the Dockerfile. Thanks for understanding :)
-
 ```
 git clone https://github.com/chvancooten/BugBountyScanner.git
 cd BugBountyScanner
