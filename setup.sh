@@ -100,13 +100,13 @@ wget https://raw.githubusercontent.com/Bo0oM/fuzz.txt/master/fuzz.txt -O $toolsD
 
 # HTTPX
 echo "[*] Installing HTTPX..."
-wget https://github.com/projectdiscovery/httpx/releases/download/v1.0.1/httpx_1.0.1_linux_amd64.tar.gz -q
-tar xvf httpx_1.0.1_linux_amd64.tar.gz -C /usr/bin/ httpx >/dev/null
-rm httpx_1.0.1_linux_amd64.tar.gz
+wget https://github.com/projectdiscovery/httpx/releases/download/v1.0.3/httpx_1.0.3_linux_amd64.tar.gz -q
+tar xvf httpx_1.0.3_linux_amd64.tar.gz -C /usr/bin/ httpx >/dev/null
+rm httpx_1.0.3_linux_amd64.tar.gz
 
 # Amass
 echo "[*] Installing Amass..."
-wget https://github.com/OWASP/Amass/releases/download/v3.10.5/amass_linux_amd64.zip -q
+wget https://github.com/OWASP/Amass/releases/download/v3.11.0/amass_linux_amd64.zip -q
 unzip -q amass_linux_amd64.zip
 mv amass_linux_amd64 amass
 rm amass_linux_amd64.zip
@@ -115,6 +115,8 @@ cp $toolsDir/amass/amass /usr/bin/amass
 # Nuclei-templates
 echo "[*] Installing Nuclei-templates..."
 git clone -q https://github.com/projectdiscovery/nuclei-templates.git
+# remove basic auth (and possible future) bruteforcing template(s) because we don't want that >:[
+find nuclei-templates/ -name "*brute*" -type f -exec rm -rf {} \;
 
 # Gf-patterns
 echo "[*] Installing Gf-patterns..."
