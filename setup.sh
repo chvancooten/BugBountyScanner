@@ -101,8 +101,8 @@ wget https://raw.githubusercontent.com/Bo0oM/fuzz.txt/master/fuzz.txt -O $toolsD
 # HTTPX
 echo "[*] Installing HTTPX..."
 wget https://github.com/projectdiscovery/httpx/releases/download/v1.0.3/httpx_1.0.3_linux_amd64.tar.gz -q
-tar xvf httpx_1.0.1_linux_amd64.tar.gz -C /usr/bin/ httpx >/dev/null
-rm httpx_1.0.1_linux_amd64.tar.gz
+tar xvf httpx_1.0.3_linux_amd64.tar.gz -C /usr/bin/ httpx >/dev/null
+rm httpx_1.0.3_linux_amd64.tar.gz
 
 # Amass
 echo "[*] Installing Amass..."
