@@ -56,7 +56,7 @@ fi
 
 # GoBuster
 gobuster -h &> /dev/null
-if [ $? -ne 2 ]; then
+if [ $? -ne 0 ]; then
     echo "Error - GoBuster not (properly) installed"
     exit 1
 fi
@@ -70,7 +70,7 @@ fi
 
 # GF
 gf -h &> /dev/null
-if [ $? -ne 2 ]; then
+if [ $? -ne 0 ]; then
     echo "Error - GF not (properly) installed"
     exit 1
 fi
