@@ -65,9 +65,9 @@ pip3 install webscreenshot >/dev/null
 go version &> /dev/null
 if [ $? -ne 0 ]; then
     echo "[*] Installing Golang..."
-    wget --quiet https://dl.google.com/go/go1.14.7.linux-amd64.tar.gz
-    tar -xvf go1.14.7.linux-amd64.tar.gz >/dev/null
-    rm -rf ./go1.14.7.linux-amd64.tar.gz >/dev/null
+    wget --quiet https://golang.org/dl/go1.17.2.linux-amd64.tar.gz
+    tar -xvf go1.17.2.linux-amd64.tar.gz >/dev/null
+    rm -rf ./go1.17.2.linux-amd64.tar.gz >/dev/null
     mv go /usr/local 
     export GOROOT="/usr/local/go"
     export GOPATH="$homeDir/go"
@@ -85,8 +85,8 @@ go get -u github.com/tomnomnom/gf &>/dev/null
 go get -u github.com/jaeles-project/gospider &>/dev/null
 go get -u github.com/tomnomnom/qsreplace &>/dev/null
 go get -u github.com/haccer/subjack &>/dev/null
-go get github.com/projectdiscovery/nuclei/v2/cmd/nuclei &>/dev/null
-go get github.com/OJ/gobuster &>/dev/null
+go get -u github.com/projectdiscovery/nuclei/v2/cmd/nuclei &>/dev/null
+go get -u github.com/OJ/gobuster &>/dev/null
 
 # Subjack fingerprints file
 echo "[*] Installing Subjack fingerprints..."
