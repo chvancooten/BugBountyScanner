@@ -112,7 +112,7 @@ wget -q https://raw.githubusercontent.com/Bo0oM/fuzz.txt/master/fuzz.txt -O $too
 # HTTPX
 echo "[*] Installing HTTPX..."
 wget -q https://github.com/projectdiscovery/httpx/releases/download/v1.1.4/httpx_1.1.4_linux_amd64.zip
-tar xvf httpx_1.1.4_linux_amd64.zip -C /usr/bin/ httpx >/dev/null
+unzip -j httpx_1.1.4_linux_amd64.zip -d /usr/bin/ httpx >/dev/null
 rm httpx_1.1.4_linux_amd64.zip
 
 # Amass
