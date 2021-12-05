@@ -263,7 +263,7 @@ do
         then
             echo "[*] RUNNING GOSPIDER..."
             # Spider for unique URLs, filter duplicate parameters
-            gospider -S "livedomains-$DOMAIN.txt" -o GoSpider -t 2 -c 5 -d 3 --blacklist jpg,jpeg,gif,css,tif,tiff,png,ttf,woff,woff2,ico,svg
+            gospider -S "livedomains-$DOMAIN.txt" -o GoSpider -t 2 -c 4 -d 3 -m 3 --no-redirect --blacklist jpg,jpeg,gif,css,tif,tiff,png,ttf,woff,woff2,ico,svg
             cat GoSpider/* | grep -o -E "(([a-zA-Z][a-zA-Z0-9+-.]*\:\/\/)|mailto|data\:)([a-zA-Z0-9\.\&\/\?\:@\+-\_=#%;,])*" | sort -u | qsreplace -a | grep "$DOMAIN" > "tmp-GoSpider-$DOMAIN.txt"
             rm -rf GoSpider
             notify "GoSpider completed. Crawled *$(wc -l < "tmp-GoSpider-$DOMAIN.txt")* endpoints. Getting interesting endpoints and parameters..."
