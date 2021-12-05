@@ -48,7 +48,6 @@ do
         echo "-d, --domain <domain>         top domain to scan, can take multiple"
         echo "-o, --outputdirectory <dir>   parent output directory, defaults to current directory (subfolders will be created per domain)"
         echo "-w, --overwrite               overwrite existing files. Skip steps with existing files if not provided (default: false)"
-        echo "-c, --collaborator-id <biid>  pass a BurpSuite Collaborator ID to Nuclei to detect blind vulns (default: not enabled)"
         echo " "
         echo "Note: 'ToolsDir', as well as your 'telegram_api_key' and 'telegram_chat_id' can be defined in .env or through (Docker) environment variables."
         echo " "
@@ -77,11 +76,6 @@ do
         ;;
         -w|--overwrite)
         overwrite=true
-        shift
-        ;;
-        -c|--collaborator-id)
-        collabID="$2"
-        shift
         shift
     esac
 done
@@ -214,16 +208,10 @@ do
     if [ "$thorough" = true ] ; then
         if [ ! -f "nuclei-$DOMAIN.txt" ] || [ "$overwrite" = true ]
         then
-            if [ -z "$collabID" ]
-            then
-                echo "[*] RUNNING NUCLEI (COLLABORATOR DISABLED)..."
-                notify "Detecting known vulnerabilities with Nuclei (collaborator disabled)..."
-                nuclei -c 150 -l "livedomains-$DOMAIN.txt" -t "$toolsDir"'/nuclei-templates/' -severity low,medium,high,critical -o "nuclei-$DOMAIN.txt"
-            else
-                echo "[*] RUNNING NUCLEI (COLLABORATOR ENABLED)..."
-                notify "Detecting known vulnerabilities with Nuclei (collaborator enabled)..."
-                nuclei -c 150 -l "livedomains-$DOMAIN.txt" -t "$toolsDir"'/nuclei-templates/' -severity low,medium,high,critical -o "nuclei-$DOMAIN.txt" -burp-collaborator-biid "$collabID"
-            fi
+            echo "[*] RUNNING NUCLEI..."
+            notify "Detecting known vulnerabilities with Nuclei..."
+            nuclei -c 150 -l "livedomains-$DOMAIN.txt" -severity low,medium,high,critical -etags "intrusive" -o "nuclei-$DOMAIN.txt"
+
             
             if [ -f "nuclei-$DOMAIN.txt" ]
             then
@@ -254,7 +242,7 @@ do
             while read -r dname;
             do
                 filename=$(echo "${dname##*/}" | sed 's/:/./g')
-                gobuster -q -e -t 20 -s 200,204 -u "$dname" -w "$toolsDir"/wordlists/tempfiles.txt -o "gobuster-$filename.txt"
+                gobuster -q -e -t 20 -s 200,204 -k -to 3s -u "$dname" -w "$toolsDir"/wordlists/tempfiles.txt -o "gobuster-$filename.txt"
             done < "../livedomains-$DOMAIN.txt"
 
             find . -size 0 -delete
@@ -275,7 +263,7 @@ do
         then
             echo "[*] RUNNING GOSPIDER..."
             # Spider for unique URLs, filter duplicate parameters
-            gospider -S "livedomains-$DOMAIN.txt" -o GoSpider -t 2 -c 5 -d 3 --blacklist jpg,jpeg,gif,css,tif,tiff,png,ttf,woff,woff2,ico,svg
+            gospider -S "livedomains-$DOMAIN.txt" -o GoSpider -t 2 -c 4 -d 3 -m 3 --no-redirect --blacklist jpg,jpeg,gif,css,tif,tiff,png,ttf,woff,woff2,ico,svg
             cat GoSpider/* | grep -o -E "(([a-zA-Z][a-zA-Z0-9+-.]*\:\/\/)|mailto|data\:)([a-zA-Z0-9\.\&\/\?\:@\+-\_=#%;,])*" | sort -u | qsreplace -a | grep "$DOMAIN" > "tmp-GoSpider-$DOMAIN.txt"
             rm -rf GoSpider
             notify "GoSpider completed. Crawled *$(wc -l < "tmp-GoSpider-$DOMAIN.txt")* endpoints. Getting interesting endpoints and parameters..."
@@ -368,7 +356,7 @@ do
         then
             echo "[*] RUNNING NMAP (TOP 1000 TCP)..."
             mkdir nmap
-            nmap -T4 --open --source-port 53 --max-retries 3 --host-timeout 15m -iL "ip-addresses-$DOMAIN.txt" -oA nmap/nmap-tcp
+            nmap -T4 -sV --open --source-port 53 --max-retries 3 --host-timeout 15m -iL "ip-addresses-$DOMAIN.txt" -oA nmap/nmap-tcp
             grep Port < nmap/nmap-tcp.gnmap | cut -d' ' -f2 | sort -u > nmap/tcpips.txt
             notify "Nmap TCP done! Identified *$(grep -c "Port" < "nmap/nmap-tcp.gnmap")* IPs with ports open. Starting Nmap UDP/SNMP scan for *$(wc -l < "nmap/tcpips.txt")* IP addresses..."
 
