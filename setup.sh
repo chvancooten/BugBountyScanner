@@ -111,7 +111,7 @@ rm httpx_1.1.4_linux_amd64.zip
 
 # Amass
 echo "[*] Installing Amass..."
-wget -q https://github.com/OWASP/Amass/releases/download/v3.11.0/amass_linux_amd64.zip
+wget -q https://github.com/OWASP/Amass/releases/download/v3.15.2/amass_linux_amd64.zip
 unzip -q amass_linux_amd64.zip
 mv amass_linux_amd64 amass
 rm amass_linux_amd64.zip
