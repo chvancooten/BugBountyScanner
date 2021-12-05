@@ -60,7 +60,7 @@ cd "$toolsDir" || { echo "Something went wrong"; exit 1; }
 # Various apt packages
 echo "[*] Running apt update and installing apt-based packages, this may take a while..."
 apt-get update >/dev/null
-apt-get install -y xvfb dnsutils nmap python3.5 python2 python3-pip curl wget unzip git >/dev/null
+apt-get install -y xvfb dnsutils nmap python3.5 python2 python3-pip curl wget unzip git libfreetype6 libfontconfig1 >/dev/null
 rm -rf /var/lib/apt/lists/*
 
 # Golang
