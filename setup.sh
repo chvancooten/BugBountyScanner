@@ -54,18 +54,14 @@ cd "$toolsDir" || { echo "Something went wrong"; exit 1; }
 # Various apt packages
 echo "[*] Running apt update and installing apt-based packages, this may take a while..."
 apt-get update >/dev/null
-apt-get install -y phantomjs xvfb dnsutils nmap python3.5 python2 python3-pip curl wget unzip git >/dev/null
+apt-get install -y xvfb dnsutils nmap python3.5 python2 python3-pip curl wget unzip git >/dev/null
 rm -rf /var/lib/apt/lists/*
-
-# Webscreenshot
-echo "[*] Installing WebScreenshot via pip..."
-pip3 install webscreenshot >/dev/null
 
 # Golang
 go version &> /dev/null
 if [ $? -ne 0 ]; then
     echo "[*] Installing Golang..."
-    wget --quiet https://golang.org/dl/go1.17.2.linux-amd64.tar.gz
+    wget -q https://golang.org/dl/go1.17.2.linux-amd64.tar.gz
     tar -xvf go1.17.2.linux-amd64.tar.gz >/dev/null
     rm -rf ./go1.17.2.linux-amd64.tar.gz >/dev/null
     mv go /usr/local 
@@ -88,25 +84,35 @@ go get -u github.com/haccer/subjack &>/dev/null
 go get -u github.com/projectdiscovery/nuclei/v2/cmd/nuclei &>/dev/null
 go get -u github.com/OJ/gobuster &>/dev/null
 
+# PhantomJS (removed from  Kali packages)
+wget -q https://bitbucket.org/ariya/phantomjs/downloads/phantomjs-2.1.1-linux-x86_64.tar.bz2
+tar xvf phantomjs-2.1.1-linux-x86_64.tar.bz2 >/dev/null
+rm phantomjs-2.1.1-linux-x86_64.tar.bz2
+cp $toolsDir/phantomjs-2.1.1-linux-x86_64/bin/phantomjs /usr/bin/phantomjs
+
+# Webscreenshot
+echo "[*] Installing WebScreenshot via pip..."
+pip3 install webscreenshot >/dev/null
+
 # Subjack fingerprints file
 echo "[*] Installing Subjack fingerprints..."
 mkdir "$toolsDir/subjack"
-wget https://raw.githubusercontent.com/haccer/subjack/master/fingerprints.json -O $toolsDir/subjack/fingerprints.json -q
+wget -q https://raw.githubusercontent.com/haccer/subjack/master/fingerprints.json -O $toolsDir/subjack/fingerprints.json
 
 # GoBuster temporary files wordlist
 echo "[*] Installing GoBuster wordlist..."
 mkdir "$toolsDir/wordlists"
-wget https://raw.githubusercontent.com/Bo0oM/fuzz.txt/master/fuzz.txt -O $toolsDir/wordlists/tempfiles.txt -q
+wget -q https://raw.githubusercontent.com/Bo0oM/fuzz.txt/master/fuzz.txt -O $toolsDir/wordlists/tempfiles.txt
 
 # HTTPX
 echo "[*] Installing HTTPX..."
-wget https://github.com/projectdiscovery/httpx/releases/download/v1.0.3/httpx_1.0.3_linux_amd64.tar.gz -q
+wget -q https://github.com/projectdiscovery/httpx/releases/download/v1.0.3/httpx_1.0.3_linux_amd64.tar.gz
 tar xvf httpx_1.0.3_linux_amd64.tar.gz -C /usr/bin/ httpx >/dev/null
 rm httpx_1.0.3_linux_amd64.tar.gz
 
 # Amass
 echo "[*] Installing Amass..."
-wget https://github.com/OWASP/Amass/releases/download/v3.11.0/amass_linux_amd64.zip -q
+wget -q https://github.com/OWASP/Amass/releases/download/v3.11.0/amass_linux_amd64.zip
 unzip -q amass_linux_amd64.zip
 mv amass_linux_amd64 amass
 rm amass_linux_amd64.zip
