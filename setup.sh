@@ -10,6 +10,12 @@ then
   exit 1
 fi
 
+if [[ "$OSTYPE" != "linux-gnu" ]] || [[ "$(uname -m)" != "x86_64" ]]
+then
+  echo "[-] Installation requires 64-bit Linux"
+  exit 1
+fi
+
 for arg in "$@"
 do
     case $arg in
