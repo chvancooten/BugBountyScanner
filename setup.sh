@@ -61,10 +61,9 @@ rm -rf /var/lib/apt/lists/*
 go version &> /dev/null
 if [ $? -ne 0 ]; then
     echo "[*] Installing Golang..."
-    wget -q https://golang.org/dl/go1.17.2.linux-amd64.tar.gz
-    tar -xvf go1.17.2.linux-amd64.tar.gz >/dev/null
-    rm -rf ./go1.17.2.linux-amd64.tar.gz >/dev/null
-    mv go /usr/local 
+    wget -q https://golang.org/dl/go1.17.4.linux-amd64.tar.gz
+    tar -xvf go1.17.4.linux-amd64.tar.gz -C /usr/local >/dev/null
+    rm -rf ./go1.17.4.linux-amd64.tar.gz >/dev/null
     export GOROOT="/usr/local/go"
     export GOPATH="$homeDir/go"
     export PATH="$PATH:${GOPATH}/bin:${GOROOT}/bin:${PATH}"
