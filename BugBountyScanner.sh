@@ -242,7 +242,7 @@ do
             while read -r dname;
             do
                 filename=$(echo "${dname##*/}" | sed 's/:/./g')
-                gobuster -q -e -t 20 -s 200,204 -k -u "$dname" -w "$toolsDir"/wordlists/tempfiles.txt -o "gobuster-$filename.txt"
+                gobuster -q -e -t 20 -s 200,204 -k --timeout 3s -u "$dname" -w "$toolsDir"/wordlists/tempfiles.txt -o "gobuster-$filename.txt"
             done < "../livedomains-$DOMAIN.txt"
 
             find . -size 0 -delete
