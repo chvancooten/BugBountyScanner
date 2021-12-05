@@ -96,7 +96,6 @@ options:
 -d, --domain <domain>     top domain to scan, can take multiple
 -o, --outputdirectory     parent output directory, defaults to current directory (subfolders will be created per domain)
 -w, --overwrite           overwrite existing files. Skip steps with existing files if not provided (default: false)
--c, --collaborator-id     pass a BurpSuite Collaborator BIID to Nuclei to detect blind vulns (default: not enabled)
  
 Note: 'ToolsDir', 'telegram_api_key' and 'telegram_chat_id' can be defined in .env or through Docker environment variables.
  
@@ -104,13 +103,11 @@ example:
 ./BugBountyScanner.sh --quick -d google.com -d uber.com -t /opt
 ```
 
-> **A note on using Burp Collaborator:** Nuclei requires your Burp Collaborator's "BIID". If you are using Burp's hosted Collaborator servers, you can acquire this ID by setting 'Project Options -> Misc -> Poll over unencrypted HTTP' for the server. Then poll the server once from your client, and intercept the `?biid=` parameter from the HTTP request using a second Burp client or Wireshark. This is the ID you need (make sure to URL-decode).
-
 ## Features
 
 - Resource-efficient, suitable for running in the background for a prolonged period of time on a low-resource VPS, home server, or Raspberry Pi
 - Telegram status notifications with per-command results
-- Extensive CVE and misconfiguration detection with Nuclei (optionally with detection of blind vulnerabilities via Burp Collaborator)
+- Extensive CVE and misconfiguration detection with Nuclei (no intrusive or informational checks)
 - Subdomain enumeration and live webserver detection
 - Web screenshotting and crawling, HTML screenshot report generation
 - Retrieving (hopefully sensitive) endpoints from the Wayback Machine

@@ -112,12 +112,6 @@ mv amass_linux_amd64 amass
 rm amass_linux_amd64.zip
 cp $toolsDir/amass/amass /usr/bin/amass
 
-# Nuclei-templates
-echo "[*] Installing Nuclei-templates..."
-git clone -q https://github.com/projectdiscovery/nuclei-templates.git
-# remove basic auth (and possible future) bruteforcing template(s) because we don't want that >:[
-find nuclei-templates/ -name "*brute*" -type f -exec rm -rf {} \;
-
 # Gf-patterns
 echo "[*] Installing Gf-patterns..."
 git clone -q https://github.com/1ndianl33t/Gf-Patterns
