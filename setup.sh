@@ -86,8 +86,8 @@ go get -u github.com/tomnomnom/gf &>/dev/null
 go get -u github.com/jaeles-project/gospider &>/dev/null
 go get -u github.com/tomnomnom/qsreplace &>/dev/null
 go get -u github.com/haccer/subjack &>/dev/null
-go get -u github.com/projectdiscovery/nuclei/v2/cmd/nuclei &>/dev/null
 go get -u github.com/OJ/gobuster &>/dev/null
+go install github.com/projectdiscovery/nuclei/v2/cmd/nuclei@latest &>/dev/null
 
 # PhantomJS (removed from  Kali packages)
 wget -q https://bitbucket.org/ariya/phantomjs/downloads/phantomjs-2.1.1-linux-x86_64.tar.bz2
