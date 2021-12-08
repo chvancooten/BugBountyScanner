@@ -5,6 +5,9 @@ echo "ENVIRONMENT:"
 env
 
 # Validate correct installation of key tools
+echo
+echo "Checking required tools..."
+
 # Golang
 go version &> /dev/null
 if [ $? -ne 0 ]; then
@@ -27,7 +30,7 @@ if [ $? -ne 0 ]; then
 fi
 
 # Subjack
-subjack | grep -q "Usage of"
+which subjack &> /dev/null
 if [ $? -ne 0 ]; then
     echo "Error - Subjack not (properly) installed"
     exit 1
@@ -51,6 +54,12 @@ fi
 nuclei -version &> /dev/null
 if [ $? -ne 0 ]; then
     echo "Error - Nuclei not (properly) installed"
+    exit 1
+fi
+
+# Nuclei-templates (directory must exist and not be empty)
+if [ ! -d "/opt/nuclei-templates" ] || [ ! -n "$(ls -A /opt/nuclei-templates)" ]; then
+    echo "Error - Nuclei-templates not (properly) installed"
     exit 1
 fi
 

@@ -89,7 +89,11 @@ go get -u github.com/haccer/subjack &>/dev/null
 go get -u github.com/OJ/gobuster &>/dev/null
 go install github.com/projectdiscovery/nuclei/v2/cmd/nuclei@latest &>/dev/null
 
+# Nuclei-templates
+nuclei -update-templates -update-directory $toolsDir/nuclei-templates &>/dev/null
+
 # PhantomJS (removed from  Kali packages)
+echo "[*] Installing PhantomJS..."
 wget -q https://bitbucket.org/ariya/phantomjs/downloads/phantomjs-2.1.1-linux-x86_64.tar.bz2
 tar xvf phantomjs-2.1.1-linux-x86_64.tar.bz2 >/dev/null
 rm phantomjs-2.1.1-linux-x86_64.tar.bz2
