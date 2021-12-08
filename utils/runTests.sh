@@ -54,6 +54,12 @@ if [ $? -ne 0 ]; then
     exit 1
 fi
 
+# Nuclei-templates (directory must exist and not be empty)
+if [ ! -d "/opt/nuclei-templates" ] || [ ! -n "$(ls -A /opt/nuclei-templates)" ]; then
+    echo "Error - Nuclei-templates not (properly) installed"
+    exit 1
+fi
+
 # GoBuster
 gobuster -h &> /dev/null
 if [ $? -ne 0 ]; then
