@@ -90,6 +90,7 @@ go get -u github.com/OJ/gobuster &>/dev/null
 go install github.com/projectdiscovery/nuclei/v2/cmd/nuclei@latest &>/dev/null
 
 # Nuclei-templates
+rm /root/.config/nuclei/.templates-config.json
 nuclei -update-templates -update-directory $toolsDir/nuclei-templates &>/dev/null
 
 # PhantomJS (removed from  Kali packages)
