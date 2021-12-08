@@ -25,7 +25,7 @@ You can run the script either as a docker image or from your preferred Debian/Ub
 
 ### Docker
 
-Docker Hub Link: https://hub.docker.com/r/chvancooten/bugbountyscanner. Images are generated automatically for both the Dev branch (`:dev` tag) and the Master branch (`:latest` tag).
+Docker Hub Link: https://hub.docker.com/r/chvancooten/bugbountyscanner. Images are pushed to the `:latest` tag whenever an update to BugBountyScanner is pushed. Poke me if I forget, Docker Hub nuked automatic builds :(.
 
 You can pull the Docker image from Docker Hub as below.
 
