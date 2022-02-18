@@ -133,6 +133,12 @@ git clone -q https://github.com/1ndianl33t/Gf-Patterns
 mkdir "$homeDir"/.gf
 cp "$toolsDir"/Gf-Patterns/*.json "$homeDir"/.gf
 
+# nrich
+echo "[*] Installing nrich..."
+wget -q https://gitlab.com/api/v4/projects/33695681/packages/generic/nrich/latest/nrich_latest_amd64.deb
+dpkg -i nrich_latest_amd64.deb &>/dev/null
+rm nrich_latest_amd64.deb
+
 # Persist configured environment variables via global profile.d script
 echo "[*] Setting environment variables..."
 if [ -f "$homeDir"/.bashrc ]

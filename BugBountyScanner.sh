@@ -151,9 +151,30 @@ do
     then
         echo "[*] RUNNING AMASS..."
         amass enum --passive -d "$DOMAIN" -o "domains-$DOMAIN.txt"
-        notify "Amass completed! Identified *$(wc -l < "domains-$DOMAIN.txt")* subdomains. Checking for live hosts with HTTPX..."
+        notify "Amass completed! Identified *$(wc -l < "domains-$DOMAIN.txt")* subdomains. Resolving IP addresses..."
     else
         echo "[-] SKIPPING AMASS"
+    fi
+
+    if [ ! -f "ip-addresses-$DOMAIN.txt" ] || [ "$overwrite" = true ]
+    then
+        echo "[*] RESOLVING IP ADDRESSES FROM HOSTS..."
+        while read -r hostname; do
+            dig "$hostname" +short >> "dig.txt"
+        done < "domains-$DOMAIN.txt"
+        grep -o '[0-9]\{1,3\}\.[0-9]\{1,3\}\.[0-9]\{1,3\}\.[0-9]\{1,3\}' "dig.txt" | sort -u > "ip-addresses-$DOMAIN.txt" && rm "dig.txt"
+        notify "Resolving done! Enriching *$(wc -l < "ip-addresses-$DOMAIN.txt")* IP addresses with Shodan data..."
+    else
+        echo "[-] SKIPPING RESOLVING HOST IP ADDRESSES"
+    fi
+
+    if [ ! -f "nrich-$DOMAIN.txt" ] || [ "$overwrite" = true ]
+    then
+        echo "[*] ENRICHING IP ADDRESS DATA WITH SHODAN..."
+        nrich "ip-addresses-$DOMAIN.txt" > "nrich-$DOMAIN.txt"
+        notify "IP addresses enriched! Make sure to give that a manual look. Getting live domains with HTTPX..."
+    else
+        echo "[-] SKIPPING IP ENRICHMENT"
     fi
 
     if [ ! -f "livedomains-$DOMAIN.txt" ] || [ "$overwrite" = true ]
@@ -211,7 +232,6 @@ do
             echo "[*] RUNNING NUCLEI..."
             notify "Detecting known vulnerabilities with Nuclei..."
             nuclei -c 150 -l "livedomains-$DOMAIN.txt" -severity low,medium,high,critical -etags "intrusive" -o "nuclei-$DOMAIN.txt"
-
             
             if [ -f "nuclei-$DOMAIN.txt" ]
             then
@@ -334,22 +354,10 @@ do
             if [ -f "potential-or.txt" ]; then
                 notify "Identified *$(wc -l < potential-or.txt)* endpoints potentially vulnerable to open redirects! Resolving IP Addresses..."
             else
-                notify "No open redirects found. Resolving IP Addresses..."
+                notify "No open redirects found. Starting Nmap for *$(wc -l < "ip-addresses-$DOMAIN.txt")* IP addresses..."
             fi
         else
             echo "[-] SKIPPING TEST FOR OPEN REDIRECTS"
-        fi
-
-        if [ ! -f "ip-addresses-$DOMAIN.txt" ] || [ "$overwrite" = true ]
-        then
-            echo "[*] RESOLVING IP ADDRESSES FROM HOSTS..."
-            while read -r hostname; do
-                dig "$hostname" +short >> "dig.txt"
-            done < "domains-$DOMAIN.txt"
-            grep -o '[0-9]\{1,3\}\.[0-9]\{1,3\}\.[0-9]\{1,3\}\.[0-9]\{1,3\}' "dig.txt" | sort -u > "ip-addresses-$DOMAIN.txt" && rm "dig.txt"
-            notify "Resolving done! Starting Nmap for *$(wc -l < "ip-addresses-$DOMAIN.txt")* IP addresses..."
-        else
-            echo "[-] SKIPPING RESOLVING HOST IP ADDRESSES"
         fi
 
         if [ ! -d "nmap" ] || [ "$overwrite" = true ]

@@ -63,6 +63,13 @@ if [ ! -d "/opt/nuclei-templates" ] || [ ! -n "$(ls -A /opt/nuclei-templates)" ]
     exit 1
 fi
 
+# nrich
+nrich --version &> /dev/null
+if [ $? -ne 0 ]; then
+    echo "Error - Nrich not (properly) installed"
+    exit 1
+fi
+
 # GoBuster
 gobuster -h &> /dev/null
 if [ $? -ne 0 ]; then
