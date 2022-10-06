@@ -81,12 +81,12 @@ fi
 # Go packages
 echo "[*] Installing various Go packages..."
 export GO111MODULE="on"
-go get -u github.com/lc/gau &>/dev/null
-go get -u github.com/tomnomnom/gf &>/dev/null
-go get -u github.com/jaeles-project/gospider &>/dev/null
-go get -u github.com/tomnomnom/qsreplace &>/dev/null
-go get -u github.com/haccer/subjack &>/dev/null
-go get -u github.com/OJ/gobuster &>/dev/null
+go install github.com/lc/gau@latest &>/dev/null
+go install github.com/tomnomnom/gf@latest &>/dev/null
+go install github.com/jaeles-project/gospider@latest &>/dev/null
+go install github.com/tomnomnom/qsreplace@latest &>/dev/null
+go install github.com/haccer/subjack@latest &>/dev/null
+go install github.com/OJ/gobuster@latest &>/dev/null
 go install github.com/projectdiscovery/nuclei/v2/cmd/nuclei@latest &>/dev/null
 
 # Nuclei-templates
