@@ -67,9 +67,9 @@ rm -rf /var/lib/apt/lists/*
 go version &> /dev/null
 if [ $? -ne 0 ]; then
     echo "[*] Installing Golang..."
-    wget -q https://golang.org/dl/go1.19.2.linux-amd64.tar.gz
-    tar -xvf go1.19.2.linux-amd64.tar.gz -C /usr/local >/dev/null
-    rm -rf ./go1.19.2.linux-amd64.tar.gz >/dev/null
+    wget -q https://golang.org/dl/go1.19.4.linux-amd64.tar.gz
+    tar -xvf go1.19.4.linux-amd64.tar.gz -C /usr/local >/dev/null
+    rm -rf ./go1.19.4.linux-amd64.tar.gz >/dev/null
     export GOROOT="/usr/local/go"
     export GOPATH="$homeDir/go"
     export PATH="$PATH:${GOPATH}/bin:${GOROOT}/bin:${PATH}"
@@ -90,7 +90,7 @@ go install github.com/OJ/gobuster@latest &>/dev/null
 go install github.com/projectdiscovery/nuclei/v2/cmd/nuclei@latest &>/dev/null
 
 # Nuclei-templates
-nuclei -update-templates -update-directory $toolsDir/nuclei-templates &>/dev/null
+nuclei -update-templates -update-template-dir $toolsDir/nuclei-templates &>/dev/null
 
 # PhantomJS (removed from  Kali packages)
 echo "[*] Installing PhantomJS..."
@@ -115,13 +115,13 @@ wget -q https://raw.githubusercontent.com/Bo0oM/fuzz.txt/master/fuzz.txt -O $too
 
 # HTTPX
 echo "[*] Installing HTTPX..."
-wget -q https://github.com/projectdiscovery/httpx/releases/download/v1.1.4/httpx_1.1.4_linux_amd64.zip
-unzip -j httpx_1.1.4_linux_amd64.zip -d /usr/bin/ httpx >/dev/null
-rm httpx_1.1.4_linux_amd64.zip
+wget -q https://github.com/projectdiscovery/httpx/releases/download/v1.2.5/httpx_1.2.5_linux_amd64.zip
+unzip -j httpx_1.2.5_linux_amd64.zip -d /usr/bin/ httpx >/dev/null
+rm httpx_1.2.5_linux_amd64.zip
 
 # Amass
 echo "[*] Installing Amass..."
-wget -q https://github.com/OWASP/Amass/releases/download/v3.15.2/amass_linux_amd64.zip
+wget -q https://github.com/OWASP/Amass/releases/download/v3.21.2/amass_linux_amd64.zip
 unzip -q amass_linux_amd64.zip
 mv amass_linux_amd64 amass
 rm amass_linux_amd64.zip
