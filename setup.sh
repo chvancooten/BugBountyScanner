@@ -140,6 +140,14 @@ wget -q https://gitlab.com/api/v4/projects/33695681/packages/generic/nrich/lates
 dpkg -i nrich_latest_amd64.deb &>/dev/null
 rm nrich_latest_amd64.deb
 
+# Waybackurls
+echo "[*] Installing Waybackurls..."
+go install github.com/tomnomnom/waybackurls@latest
+
+# Assetfinder
+echo "[*] Installing Assetfinder..."
+go get -u github.com/tomnomnom/assetfinder
+
 # Persist configured environment variables via global profile.d script
 echo "[*] Setting environment variables..."
 if [ -f "$homeDir"/.bashrc ]
