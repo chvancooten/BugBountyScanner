@@ -1,6 +1,7 @@
 #!/bin/bash
 ## Automated Bug Bounty recon script dependency installer
 ## By Cas van Cooten
+## Forked by Aman Thanvi
 
 if [ "$EUID" -ne 0 ]
 then
@@ -20,7 +21,7 @@ for arg in "$@"
 do
     case $arg in
         -h|--help)
-        echo "BugBountyHunter Dependency Installer"
+        echo "BugBountyHunter Dependency Installer, by Cas van Cooten, forked by Aman Thanvi"
         echo " "
         echo "$0 [options]"
         echo " "

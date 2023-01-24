@@ -1,6 +1,7 @@
 #!/bin/bash
 ## Automated Bug Bounty recon script
 ## By Cas van Cooten
+## Forked by Aman Thanvi
 
 scriptDir=$(dirname "$(readlink -f "$0")")
 baseDir=$PWD
@@ -9,33 +10,57 @@ thorough=true
 notify=true
 overwrite=false
 
-source "./utils/screenshotReport.sh"
+# Load functions
+source "utils/notify.sh"
+source "utils/notifyScreenshot.sh"
+source "utils/notifyScreenshotReport.sh"
+source "utils/notifyReport.sh"
+source "utils/notifyReportScreenshot.sh"
+source "utils/notifyReportScreenshot.sh"
+source "utils/report.sh"
+source "utils/screenshot.sh"
+source "utils/screenshotReport.sh"
 
 function notify {
-    if [ "$notify" = true ]
-    then
-        if [ $(($(date +%s) - lastNotified)) -le 3 ]
-        then
-            echo "[!] Notifying too quickly, sleeping to avoid skipped notifications..."
-            sleep 3
-        fi
-
-        # Format string to escape special characters and send message through Telegram API.
-        if [ -z "$DOMAIN" ]
-        then
-            message=`echo -ne "*BugBountyScanner:* $1" | sed 's/[^a-zA-Z 0-9*_]/\\\\&/g'`
-        else
-            message=`echo -ne "*BugBountyScanner [$DOMAIN]:* $1" | sed 's/[^a-zA-Z 0-9*_]/\\\\&/g'`
-        fi
-    
-        curl -s -X POST "https://api.telegram.org/bot$telegram_api_key/sendMessage" -d chat_id="$telegram_chat_id" -d text="$message" -d parse_mode="MarkdownV2" &> /dev/null
-        lastNotified=$(date +%s)
+  # Check if notify is true
+  if [ "$notify" = true ]; then
+    # Check if the last notification was sent less than 3 seconds ago.
+    if [ $(($(date +%s) - lastNotified)) -le 3 ]; then
+      echo "[!] Notifying too quickly, sleeping to avoid skipped notifications..."
+      sleep 3
     fi
+
+    # Format string to escape special characters and send message through Telegram API.
+    if [ -z "$DOMAIN" ]; then
+      message=`echo -ne "*BugBountyScanner:* $1" | sed 's/[^a-zA-Z 0-9*_]/\\\\&/g'`
+    else
+      message=`echo -ne "*BugBountyScanner [$DOMAIN]:* $1" | sed 's/[^a-zA-Z 0-9*_]/\\\\&/g'`
+    fi
+
+    curl -s -X POST "https://api.telegram.org/bot$telegram_api_key/sendMessage" -d chat_id="$telegram_chat_id" -d text="$message" -d parse_mode="MarkdownV2" &> /dev/null
+    lastNotified=$(date +%s)
+  fi
 }
 
+# Parse arguments
+#!/bin/bash
+# This script is used to run the BugBountyHunter script.
+# It is designed to be run as a cron job, but can also be run manually.
+
+# Set script to exit if any command fails
+set -e
+
+# Check if we're running as root
+if [[ $EUID -ne 0 ]]; then
+    echo "This script must be run as root" 1>&2
+    exit 1
+fi
+
+# Parse command line arguments
 for arg in "$@"
 do
     case $arg in
+        # Display help
         -h|--help)
         echo "BugBountyHunter - Automated Bug Bounty reconnaissance script"
         echo " "
@@ -55,25 +80,30 @@ do
         echo "$0 --quick -d google.com -d uber.com -t /opt"
         exit 0
         ;;
+        # Perform quick recon only
         -q|--quick)
         thorough=false
         shift
         ;;
+        # Specify domains to scan
         -d|--domain)
         domainargs+=("$2")
         shift
         shift
         ;;
+        # Specify tools directory
         -t|--toolsdir)
         toolsDir="$2"
         shift
         shift
         ;;
+        # Specify output directory
         -o|--outputdirectory)
         baseDir="$2"
         shift
         shift
         ;;
+        # Overwrite existing files
         -w|--overwrite)
         overwrite=true
         shift

@@ -1,8 +1,6 @@
 #!/bin/bash
-# Test script to validate the correctness of Dockerized Github CI builds
-
-echo "ENVIRONMENT:"
-env
+# Check for required tools
+# This script is intended to be run as an entrypoint for a Docker container
 
 # Validate correct installation of key tools
 echo
