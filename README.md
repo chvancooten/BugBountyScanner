@@ -6,6 +6,8 @@
 [![Docker Image Size Badge](https://img.shields.io/docker/image-size/chvancooten/bugbountyscanner)](https://hub.docker.com/r/chvancooten/bugbountyscanner/)
 [![PRs Welcome](https://img.shields.io/badge/Contributions-Welcome-brightgreen.svg)](http://makeapullrequest.com)
 
+# AMAN T. WAS HERE
+
 A Bash script and Docker image for Bug Bounty reconnaissance, intended for headless use. Low on resources, high on information output.
 
 Helpful? BugBountyScanner helped you net a bounty?
