@@ -2,7 +2,6 @@
 
 [![GitHub Workflow Status](https://img.shields.io/github/actions/workflow/status/chvancooten/BugBountyScanner/main.yml)](https://github.com/chvancooten/BugBountyScanner/actions)
 [![Docker Pulls Badge](https://img.shields.io/docker/pulls/chvancooten/bugbountyscanner)](https://hub.docker.com/r/chvancooten/bugbountyscanner/)
-[![Docker Automated Badge](https://img.shields.io/docker/cloud/automated/chvancooten/bugbountyscanner)](https://hub.docker.com/r/chvancooten/bugbountyscanner/)
 [![Docker Image Size Badge](https://img.shields.io/docker/image-size/chvancooten/bugbountyscanner)](https://hub.docker.com/r/chvancooten/bugbountyscanner/)
 [![PRs Welcome](https://img.shields.io/badge/Contributions-Welcome-brightgreen.svg)](http://makeapullrequest.com)
 
@@ -10,7 +9,7 @@ A Bash script and Docker image for Bug Bounty reconnaissance, intended for headl
 
 Helpful? BugBountyScanner helped you net a bounty?
 
-[![Docker Image Size Badge](https://img.shields.io/badge/%F0%9F%8D%BA-Buy%20me%20a%20beer-orange)](https://www.buymeacoffee.com/chvancooten)
+[![Sponsor on GitHub](https://img.shields.io/badge/%F0%9F%A5%B0-Sponsor%20me%20on%20github-red)](https://github.com/sponsors/chvancooten)
 
 ## Description
 
@@ -24,13 +23,13 @@ You can run the script either as a docker image or from your preferred Debian/Ub
 
 ### Docker
 
-Docker Hub Link: https://hub.docker.com/r/chvancooten/bugbountyscanner. Images are pushed to the `:latest` tag whenever an update to BugBountyScanner is pushed. Poke me if I forget, Docker Hub nuked automatic builds :(.
+Docker Hub Link: https://hub.docker.com/r/chvancooten/bugbountyscanner. Images are pushed to the `:latest` tag by CI/CD whenever an update to BugBountyScanner is pushed and all tests pass.
 
-You can pull the Docker image from Docker Hub as below.
+You can pull and run the Docker image from Docker Hub as below.
 
 ```
 docker pull chvancooten/bugbountyscanner
-docker run -it chvancooten/bugbountyscanner /bin/bash
+docker run -v $(pwd):/root/bugbounty -it chvancooten/bugbountyscanner /bin/bash
 ```
 
 Docker-Compose can also be used.
