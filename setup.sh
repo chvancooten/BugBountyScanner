@@ -86,7 +86,7 @@ go install github.com/tomnomnom/gf@latest &>/dev/null
 go install github.com/jaeles-project/gospider@latest &>/dev/null
 go install github.com/tomnomnom/qsreplace@latest &>/dev/null
 go install github.com/haccer/subjack@latest &>/dev/null
-go install github.com/OJ/gobuster@latest &>/dev/null
+go install github.com/OJ/ffuf@latest &>/dev/null
 go install github.com/projectdiscovery/nuclei/v2/cmd/nuclei@latest &>/dev/null
 
 # Nuclei-templates
@@ -109,7 +109,7 @@ mkdir "$toolsDir/subjack"
 wget -q https://raw.githubusercontent.com/haccer/subjack/master/fingerprints.json -O $toolsDir/subjack/fingerprints.json
 
 # GoBuster temporary files wordlist
-echo "[*] Installing GoBuster wordlist..."
+echo "[*] Installing ffuf wordlist..."
 mkdir "$toolsDir/wordlists"
 wget -q https://raw.githubusercontent.com/Bo0oM/fuzz.txt/master/fuzz.txt -O $toolsDir/wordlists/tempfiles.txt
 
