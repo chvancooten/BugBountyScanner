@@ -70,10 +70,10 @@ if [ $? -ne 0 ]; then
     exit 1
 fi
 
-# GoBuster
-gobuster -h &> /dev/null
+## ffuf
+ffuf -h &> /dev/null
 if [ $? -ne 0 ]; then
-    echo "Error - GoBuster not (properly) installed"
+    echo "Error - ffuf not (properly) installed"
     exit 1
 fi
 
