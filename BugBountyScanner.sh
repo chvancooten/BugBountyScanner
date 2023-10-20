@@ -195,23 +195,23 @@ do
             echo "[+] HIJACKABLE SUBDOMAINS FOUND!"
             notify "SubJack completed. One or more hijackable subdomains found!"
             notify "Hijackable domains: $(cat "subjack-$DOMAIN.txt")"
-            notify "Gathering live page screenshots with WebScreenshot..."
+            notify "Gathering live page screenshots with aquatone..."
         else
             echo "[-] NO HIJACKABLE SUBDOMAINS FOUND."
-            notify "No hijackable subdomains found. Gathering live page screenshots with WebScreenshot..."
+            notify "No hijackable subdomains found. Gathering live page screenshots with aquatone..."
         fi
     else
         echo "[-] SKIPPING SUBJACK"
     fi
 
-    if [ ! -d "webscreenshot" ] || [ "$overwrite" = true ]
+    if [ ! -d "aquatone" ] || [ "$overwrite" = true ]
     then
-        echo "[*] RUNNING WEBSCREENSHOT..."
-        webscreenshot -i "livedomains-$DOMAIN.txt" -o webscreenshot --no-error-file
+        echo "[*] RUNNING aquatone..."
+        cat livedomains-$DOMAIN.txt | ./aquatone -ports xlarge
         generate_screenshot_report "$DOMAIN"
-        notify "WebScreenshot completed! Took *$(find webscreenshot/* -maxdepth 0 | wc -l)* screenshots. Getting Wayback Machine path list with GAU..."
+        notify "aquatone completed! Took *$(find aquatone/* -maxdepth 0 | wc -l)* screenshots. Getting Wayback Machine path list with GAU..."
     else
-        echo "[-] SKIPPING WEBSCREENSHOT"
+        echo "[-] SKIPPING aquatone"
     fi
 
     if [ ! -f "WayBack-$DOMAIN.txt" ] || [ "$overwrite" = true ]

@@ -99,9 +99,12 @@ tar xvf phantomjs-2.1.1-linux-x86_64.tar.bz2 >/dev/null
 rm phantomjs-2.1.1-linux-x86_64.tar.bz2
 cp $toolsDir/phantomjs-2.1.1-linux-x86_64/bin/phantomjs /usr/bin/phantomjs
 
-# Webscreenshot
-echo "[*] Installing WebScreenshot via pip..."
-pip3 install webscreenshot >/dev/null
+# Aquatone
+echo "[*] Installing Aquatone"
+mkdir "$toolsDir/aquatone"
+wget https://github.com/michenriksen/aquatone/releases/download/v1.7.0/aquatone_linux_amd64_1.7.0.zip -O $toolsDir/aquatone/aquatone_linux_amd64_1.7.0.zip
+unzip aquatone_linux_amd64_1.7.0.zip >/dev/null
+rm aquatone_linux_amd64_1.7.0.zip
 
 # Subjack fingerprints file
 echo "[*] Installing Subjack fingerprints..."
