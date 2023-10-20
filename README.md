@@ -134,6 +134,7 @@ example:
 
 ## Contributers
 A big thanks to all the contributors who have helped improve. Your contributions are highly appreciated.
+
 <a href="https://github.com/chvancooten/BugBountyScanner/graphs/contributors">
   <img src="https://contrib.rocks/image?repo=chvancooten/BugBountyScanner" />
 </a>
