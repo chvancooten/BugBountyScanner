@@ -36,8 +36,8 @@ if [ $? -ne 0 ]; then
     exit 1
 fi
 
-# Webscreenshot
-webscreenshot -h &> /dev/null
+# aquatone
+./aquatone -h &> /dev/null
 if [ $? -ne 0 ]; then
     echo "Error - Webscreenshot not (properly) installed"
     exit 1
