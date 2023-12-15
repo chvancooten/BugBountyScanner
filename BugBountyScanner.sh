@@ -195,23 +195,23 @@ do
             echo "[+] HIJACKABLE SUBDOMAINS FOUND!"
             notify "SubJack completed. One or more hijackable subdomains found!"
             notify "Hijackable domains: $(cat "subjack-$DOMAIN.txt")"
-            notify "Gathering live page screenshots with WebScreenshot..."
+            notify "Gathering live page screenshots with aquatone..."
         else
             echo "[-] NO HIJACKABLE SUBDOMAINS FOUND."
-            notify "No hijackable subdomains found. Gathering live page screenshots with WebScreenshot..."
+            notify "No hijackable subdomains found. Gathering live page screenshots with aquatone..."
         fi
     else
         echo "[-] SKIPPING SUBJACK"
     fi
 
-    if [ ! -d "webscreenshot" ] || [ "$overwrite" = true ]
+    if [ ! -f "aquatone_report.html" ] || [ "$overwrite" = true ]
     then
-        echo "[*] RUNNING WEBSCREENSHOT..."
-        webscreenshot -i "livedomains-$DOMAIN.txt" -o webscreenshot --no-error-file
+        echo "[*] RUNNING AQUATONE..."
+        cat livedomains-$DOMAIN.txt | aquatone -ports medium
         generate_screenshot_report "$DOMAIN"
-        notify "WebScreenshot completed! Took *$(find webscreenshot/* -maxdepth 0 | wc -l)* screenshots. Getting Wayback Machine path list with GAU..."
+        notify "Aquatone completed! Took *$(find screenshots/* -maxdepth 0 | wc -l)* screenshots. Getting Wayback Machine path list with GAU..."
     else
-        echo "[-] SKIPPING WEBSCREENSHOT"
+        echo "[-] SKIPPING AQUATONE"
     fi
 
     if [ ! -f "WayBack-$DOMAIN.txt" ] || [ "$overwrite" = true ]
@@ -239,44 +239,51 @@ do
                 critIssues="$(grep -c 'critical' < "nuclei-$DOMAIN.txt")"
                 if [ "$critIssues" -gt 0 ]
                 then
-                    notify "Nuclei completed. Found *$(wc -l < "nuclei-$DOMAIN.txt")* (potential) issues, of which *$critIssues* are critical, and *$highIssues* are high severity. Finding temporary files with GoBuster..."
+                    notify "Nuclei completed. Found *$(wc -l < "nuclei-$DOMAIN.txt")* (potential) issues, of which *$critIssues* are critical, and *$highIssues* are high severity. Finding temporary files with ffuf.."
                 elif [ "$highIssues" -gt 0 ]
                 then
-                    notify "Nuclei completed. Found *$(wc -l < "nuclei-$DOMAIN.txt")* (potential) issues, of which *$highIssues* are high severity. Finding temporary files with GoBuster..."
+                    notify "Nuclei completed. Found *$(wc -l < "nuclei-$DOMAIN.txt")* (potential) issues, of which *$highIssues* are high severity. Finding temporary files with ffuf..."
                 else
-                    notify "Nuclei completed. Found *$(wc -l < "nuclei-$DOMAIN.txt")* (potential) issues, of which none are critical or high severity. Finding temporary files with GoBuster..."
+                    notify "Nuclei completed. Found *$(wc -l < "nuclei-$DOMAIN.txt")* (potential) issues, of which none are critical or high severity. Finding temporary files with ffuf..."
                 fi
             else
-                notify "Nuclei completed. No issues found. Finding temporary files with GoBuster..."
+                notify "Nuclei completed. No issues found. Finding temporary files with ffuf..."
             fi
         else
             echo "[-] SKIPPING NUCLEI"
         fi
 
-        if [ ! -d "gobuster" ] || [ "$overwrite" = true ]
+        if [ ! -d "ffuf" ] || [ "$overwrite" = true ]
         then
-            echo "[*] RUNNING GOBUSTER..."
-            mkdir gobuster
-            cd gobuster || { echo "Something went wrong"; exit 1; }
+                echo "[*] RUNNING FFUF..."
+		mkdir ffuf
+		cd ffuf || { echo "Something went wrong"; exit 1; }
 
-            while read -r dname;
-            do
-                filename=$(echo "${dname##*/}" | sed 's/:/./g')
-                gobuster -q -e -t 20 -s 200,204 -k -to 3s -u "$dname" -w "$toolsDir"/wordlists/tempfiles.txt -o "gobuster-$filename.txt"
-            done < "../livedomains-$DOMAIN.txt"
+		while read -r dname;
+		do
+    			filename=$(echo "${dname##*/}" | sed 's/:/./g')
+    			ffuf -w "$toolsDir/wordlists/tempfiles.txt" -u "$dname/FUZZ" -mc 200-299 -maxtime 180 -o "ffuf-$filename.csv" -of csv
+		done < "../livedomains-$DOMAIN.txt"
 
-            find . -size 0 -delete
+        # Remove all files with only a header row
+        find . -type f -size -1c -delete
 
-            if [ "$(ls -A .)" ]; then
-                notify "GoBuster completed. Got *$(cat ./* | wc -l)* files. Spidering paths with GoSpider..."
-                cd .. || { echo "Something went wrong"; exit 1; }
-            else
-                notify "GoBuster completed. No temporary files identified. Spidering paths with GoSpider..."
-                cd .. || { echo "Something went wrong"; exit 1; }
-                rm -rf gobuster
+        # Count the number of files (lines in the ffuf files, excluding the header row for each file) and sum into variable
+        ffufFiles=$(find . -type f -exec wc -l {} + | sed '$d' | awk '{sum+=$1-1} END{print sum}')
+
+		if [ "$ffufFiles" -gt 0 ]
+        then
+    			notify "FFUF completed. Got *$ffufFiles* files. Spidering paths with GoSpider..."
+    			cd .. || { echo "Something went wrong"; exit 1; }
+		else
+    			notify "FFUF completed. No temporary files identified. Spidering paths with GoSpider..."
+    			cd .. || { echo "Something went wrong"; exit 1; }
+    			rm -rf ffuf
+		fi
+
             fi   
         else
-            echo "[-] SKIPPING GOBUSTER"
+            echo "[-] SKIPPING ffuf"
         fi
 
         if [ ! -f "paths-$DOMAIN.txt" ] || [ "$overwrite" = true ]
@@ -375,7 +382,7 @@ do
         else
             echo "[-] SKIPPING NMAP"
         fi
-    fi
+    
 
     cd ..
     echo "[+] DONE SCANNING $DOMAIN."

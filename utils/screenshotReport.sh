@@ -4,7 +4,7 @@
 generate_screenshot_report() {
 
 domain=$1
-cd "webscreenshot" || { echo "Something went wrong"; exit 1; }
+cd "./screenshots" || { echo "Something went wrong"; exit 1; }
 
 if [ -e screenshotReport.html ]
 then
@@ -20,35 +20,25 @@ cat >> ../screenshotReport.html << HEADER
 <link rel="stylesheet" href="./dist/github-markdown.css">
 <title>Screenshots for $domain</title>
 <style>
+    .markdown-body {
+        box-sizing: border-box;
+        min-width: 200px;
+        max-width: 980px;
+        margin: 0 auto;
+        padding: 45px;
+    }
 
-	.markdown-body {
-		box-sizing: border-box;
-		min-width: 200px;
-		max-width: 980px;
-		margin: 0 auto;
-		padding: 45px;
-	}
-
-	@media (max-width: 767px) {
-		.markdown-body {
-			padding: 15px;
-		}
-	}
-
-  /* TODO some CSS-fu to make this mess nicer :) 
-
-  .screenshot img {
-    height: 50%;
-    width: 50%;
-    border: 1px solid black;
-  }
-  */
-
+    @media (max-width: 767px) {
+        .markdown-body {
+            padding: 15px;
+        }
+    }
 </style>
 </head>
 <body>
 <div class="markdown-body">
-  <h1>Screenshots for <code>$domain</code></h2>
+  <h1>Screenshots for <code>$domain</code></h1>
+  <h2>Note: This report has been deprecated in favor of Aquatone. Please check out <a href="./aquatone_report.html">the Aquatone report</a> instead.</h2>
 HEADER
 
 for i in *.png
@@ -56,9 +46,9 @@ do
 caption="$i"
 cat >> ../screenshotReport.html << HTML
 <div id="img_$i" class="screenshot">
-  <a href="./webscreenshot/$i">
+  <a href="./screenshots/$i">
   <p>$caption</p>
-  <img src="./webscreenshot/$i" alt="$caption"/>
+  <img src="./screenshots/$i" alt="$caption"/>
   </a>
   <br>
   <br>
@@ -77,3 +67,4 @@ FOOTER
 
 cd ..
 }
+
