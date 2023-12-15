@@ -65,6 +65,6 @@ cat >> ../screenshotReport.html << FOOTER
 </html>
 FOOTER
 
-cd ../..
+cd ..
 }
 

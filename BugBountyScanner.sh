@@ -204,12 +204,12 @@ do
         echo "[-] SKIPPING SUBJACK"
     fi
 
-    if [ ! -d "aquatone" ] || [ "$overwrite" = true ]
+    if [ ! -f "aquatone_report.html" ] || [ "$overwrite" = true ]
     then
         echo "[*] RUNNING AQUATONE..."
         cat livedomains-$DOMAIN.txt | aquatone -ports medium
         generate_screenshot_report "$DOMAIN"
-        notify "aquatone completed! Took *$(find aquatone/* -maxdepth 0 | wc -l)* screenshots. Getting Wayback Machine path list with GAU..."
+        notify "Aquatone completed! Took *$(find screenshots/* -maxdepth 0 | wc -l)* screenshots. Getting Wayback Machine path list with GAU..."
     else
         echo "[-] SKIPPING AQUATONE"
     fi
@@ -262,7 +262,7 @@ do
 		while read -r dname;
 		do
     			filename=$(echo "${dname##*/}" | sed 's/:/./g')
-    			ffuf -w "$toolsDir/wordlists/tempfiles.txt" -u "$dname" -maxtime 3 -o "ffuf-$filename.txt"
+    			ffuf -w "$toolsDir/wordlists/tempfiles.txt" -u "$dname/FUZZ" -maxtime 3 -o "ffuf-$filename.txt"
 		done < "../livedomains-$DOMAIN.txt"
 
 		find . -size 0 -delete
