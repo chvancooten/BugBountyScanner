@@ -269,7 +269,7 @@ do
         find . -type f -size -1c -delete
 
         # Count the number of files (lines in the ffuf files, excluding the header row for each file) and sum into variable
-        ffufFiles=$(find . -type f -exec wc -l {} + | awk '{sum+=$1} END{print sum}')
+        ffufFiles=$(find . -type f -exec wc -l {} + | sed '$d' | awk '{sum+=$1-1} END{print sum}')
 
 		if [ "$ffufFiles" -gt 0 ]
         then
