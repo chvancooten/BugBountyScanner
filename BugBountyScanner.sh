@@ -262,13 +262,18 @@ do
 		while read -r dname;
 		do
     			filename=$(echo "${dname##*/}" | sed 's/:/./g')
-    			ffuf -w "$toolsDir/wordlists/tempfiles.txt" -u "$dname/FUZZ" -mc 200-299 -maxtime 60 -o "ffuf-$filename.csv" -of csv
+    			ffuf -w "$toolsDir/wordlists/tempfiles.txt" -u "$dname/FUZZ" -mc 200-299 -maxtime 180 -o "ffuf-$filename.csv" -of csv
 		done < "../livedomains-$DOMAIN.txt"
 
-		find . -size 0 -delete
+        # Remove all files with only a header row
+        find . -type f -size -1c -delete
 
-		if [ "$(ls -A .)" ]; then
-    			notify "FFUF completed. Got *$(cat ./* | wc -l)* files. Spidering paths with GoSpider..."
+        # Count the number of files (lines in the ffuf files, excluding the header row for each file) and sum into variable
+        ffufFiles=$(find . -type f -exec wc -l {} + | awk '{sum+=$1} END{print sum}')
+
+		if [ "$ffufFiles" -gt 0 ]
+        then
+    			notify "FFUF completed. Got *$ffufFiles* files. Spidering paths with GoSpider..."
     			cd .. || { echo "Something went wrong"; exit 1; }
 		else
     			notify "FFUF completed. No temporary files identified. Spidering paths with GoSpider..."
