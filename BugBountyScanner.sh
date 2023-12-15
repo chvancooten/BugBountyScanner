@@ -262,7 +262,7 @@ do
 		while read -r dname;
 		do
     			filename=$(echo "${dname##*/}" | sed 's/:/./g')
-    			ffuf -w "$toolsDir/wordlists/tempfiles.txt" -u "$dname/FUZZ" -maxtime 3 -o "ffuf-$filename.txt"
+    			ffuf -w "$toolsDir/wordlists/tempfiles.txt" -u "$dname/FUZZ" -mc 200-299 -maxtime 60 -o "ffuf-$filename.csv" -of csv
 		done < "../livedomains-$DOMAIN.txt"
 
 		find . -size 0 -delete
