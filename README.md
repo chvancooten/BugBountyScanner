@@ -123,7 +123,7 @@ example:
 - `Go`
 - `gau`
 - `Gf` (with `Gf-Patterns`)
-- `GoBuster`
+- `ffuf`
 - `gospider`
 - `httpx`
 - `nmap`

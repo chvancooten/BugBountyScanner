@@ -86,7 +86,7 @@ go install github.com/tomnomnom/gf@latest &>/dev/null
 go install github.com/jaeles-project/gospider@latest &>/dev/null
 go install github.com/tomnomnom/qsreplace@latest &>/dev/null
 go install github.com/haccer/subjack@latest &>/dev/null
-go install github.com/OJ/gobuster@latest &>/dev/null
+go install github.com/OJ/ffuf@latest &>/dev/null
 go install github.com/projectdiscovery/nuclei/v2/cmd/nuclei@latest &>/dev/null
 
 # Nuclei-templates
@@ -99,9 +99,12 @@ tar xvf phantomjs-2.1.1-linux-x86_64.tar.bz2 >/dev/null
 rm phantomjs-2.1.1-linux-x86_64.tar.bz2
 cp $toolsDir/phantomjs-2.1.1-linux-x86_64/bin/phantomjs /usr/bin/phantomjs
 
-# Webscreenshot
-echo "[*] Installing WebScreenshot via pip..."
-pip3 install webscreenshot >/dev/null
+# Aquatone
+echo "[*] Installing Aquatone"
+mkdir "$toolsDir/aquatone"
+wget https://github.com/michenriksen/aquatone/releases/download/v1.7.0/aquatone_linux_amd64_1.7.0.zip -O $toolsDir/aquatone/aquatone_linux_amd64_1.7.0.zip
+unzip aquatone_linux_amd64_1.7.0.zip >/dev/null
+rm aquatone_linux_amd64_1.7.0.zip
 
 # Subjack fingerprints file
 echo "[*] Installing Subjack fingerprints..."
@@ -109,7 +112,7 @@ mkdir "$toolsDir/subjack"
 wget -q https://raw.githubusercontent.com/haccer/subjack/master/fingerprints.json -O $toolsDir/subjack/fingerprints.json
 
 # GoBuster temporary files wordlist
-echo "[*] Installing GoBuster wordlist..."
+echo "[*] Installing ffuf wordlist..."
 mkdir "$toolsDir/wordlists"
 wget -q https://raw.githubusercontent.com/Bo0oM/fuzz.txt/master/fuzz.txt -O $toolsDir/wordlists/tempfiles.txt
 
