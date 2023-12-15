@@ -110,7 +110,7 @@ example:
 - Web screenshotting and crawling, HTML screenshot report generation
 - Retrieving (hopefully sensitive) endpoints from the Wayback Machine
 - Identification of interesting parameterized URLs with Gf
-- Enumeration of common "temporary" and forgotten files with GoBuster
+- Enumeration of common "temporary" and forgotten files with Ffuf
 - Automatic detection of LFI, SSTI, and Open Redirects in URL parameters
 - Subdomain takeover detection
 - Port scanning (Top 1000 TCP + SNMP)
@@ -119,18 +119,18 @@ example:
 ## Tools
 
 - `amass`
+- `aquatone`
 - `dnsutils`
-- `Go`
+- `ffuf`
 - `gau`
 - `Gf` (with `Gf-Patterns`)
-- `ffuf`
+- `Go`
 - `gospider`
 - `httpx`
 - `nmap`
 - `Nuclei` (with `Nuclei-Templates`)
 - `qsreplace`
 - `subjack`
-- `webscreenshot`
 
 ## Contributers
 A big thanks to all the contributors who have helped improve. Your contributions are highly appreciated.
