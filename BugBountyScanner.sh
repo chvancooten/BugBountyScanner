@@ -206,12 +206,12 @@ do
 
     if [ ! -d "aquatone" ] || [ "$overwrite" = true ]
     then
-        echo "[*] RUNNING aquatone..."
-        cat livedomains-$DOMAIN.txt | ./aquatone -ports xlarge
+        echo "[*] RUNNING AQUATONE..."
+        cat livedomains-$DOMAIN.txt | aquatone -ports medium
         generate_screenshot_report "$DOMAIN"
         notify "aquatone completed! Took *$(find aquatone/* -maxdepth 0 | wc -l)* screenshots. Getting Wayback Machine path list with GAU..."
     else
-        echo "[-] SKIPPING aquatone"
+        echo "[-] SKIPPING AQUATONE"
     fi
 
     if [ ! -f "WayBack-$DOMAIN.txt" ] || [ "$overwrite" = true ]

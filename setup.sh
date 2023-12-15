@@ -63,6 +63,12 @@ apt-get update >/dev/null
 apt-get install -y xvfb dnsutils nmap python3.9 python2 python3-pip curl wget unzip git libfreetype6 libfontconfig1 >/dev/null
 rm -rf /var/lib/apt/lists/*
 
+# Chrome (for aquatone)
+wget -q https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb
+apt update -qq
+apt install ./google-chrome-stable_current_amd64.deb -y >/dev/null
+rm google-chrome-stable_current_amd64.deb
+
 # Golang
 go version &> /dev/null
 if [ $? -ne 0 ]; then
@@ -101,9 +107,8 @@ cp $toolsDir/phantomjs-2.1.1-linux-x86_64/bin/phantomjs /usr/bin/phantomjs
 
 # Aquatone
 echo "[*] Installing Aquatone"
-mkdir "$toolsDir/aquatone"
-wget https://github.com/michenriksen/aquatone/releases/download/v1.7.0/aquatone_linux_amd64_1.7.0.zip -O $toolsDir/aquatone/aquatone_linux_amd64_1.7.0.zip
-unzip aquatone_linux_amd64_1.7.0.zip >/dev/null
+wget -q https://github.com/michenriksen/aquatone/releases/download/v1.7.0/aquatone_linux_amd64_1.7.0.zip
+unzip -j aquatone_linux_amd64_1.7.0.zip -d /usr/bin/ aquatone >/dev/null
 rm aquatone_linux_amd64_1.7.0.zip
 
 # Subjack fingerprints file

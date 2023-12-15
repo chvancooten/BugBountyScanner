@@ -4,7 +4,7 @@
 generate_screenshot_report() {
 
 domain=$1
-cd "aquatone/screenshots" || { echo "Something went wrong"; exit 1; }
+cd "./screenshots" || { echo "Something went wrong"; exit 1; }
 
 if [ -e screenshotReport.html ]
 then
@@ -37,7 +37,8 @@ cat >> ../screenshotReport.html << HEADER
 </head>
 <body>
 <div class="markdown-body">
-  <h1>Screenshots for <code>$domain</code></h2>
+  <h1>Screenshots for <code>$domain</code></h1>
+  <h2>Note: This report has been deprecated in favor of Aquatone. Please check out <a href="./aquatone_report.html">the Aquatone report</a> instead.</h2>
 HEADER
 
 for i in *.png
@@ -45,9 +46,9 @@ do
 caption="$i"
 cat >> ../screenshotReport.html << HTML
 <div id="img_$i" class="screenshot">
-  <a href="./aquatone/screenshots/$i">
+  <a href="./screenshots/$i">
   <p>$caption</p>
-  <img src="./aquatone/screenshots/$i" alt="$caption"/>
+  <img src="./screenshots/$i" alt="$caption"/>
   </a>
   <br>
   <br>
