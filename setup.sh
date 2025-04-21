@@ -60,7 +60,7 @@ cd "$toolsDir" || { echo "Something went wrong"; exit 1; }
 # Various apt packages
 echo "[*] Running apt update and installing apt-based packages, this may take a while..."
 apt-get update >/dev/null
-apt-get install -y xvfb dnsutils nmap python3.9 python2 python3-pip curl wget unzip git libfreetype6 libfontconfig1 >/dev/null
+apt-get install -y xvfb dnsutils nmap python3 python2 python3-pip curl wget unzip git libfreetype6 libfontconfig1 >/dev/null
 rm -rf /var/lib/apt/lists/*
 
 # Chrome (for aquatone)
@@ -73,9 +73,9 @@ rm google-chrome-stable_current_amd64.deb
 go version &> /dev/null
 if [ $? -ne 0 ]; then
     echo "[*] Installing Golang..."
-    wget -q https://golang.org/dl/go1.20.4.linux-amd64.tar.gz
-    tar -xvf go1.20.4.linux-amd64.tar.gz -C /usr/local >/dev/null
-    rm -rf ./go1.20.4.linux-amd64.tar.gz >/dev/null
+    wget -q https://golang.org/dl/go1.24.2.linux-amd64.tar.gz
+    tar -xvf go1.24.2.linux-amd64.tar.gz -C /usr/local >/dev/null
+    rm -rf ./go1.24.2.linux-amd64.tar.gz >/dev/null
     export GOROOT="/usr/local/go"
     export GOPATH="$homeDir/go"
     export PATH="$PATH:${GOPATH}/bin:${GOROOT}/bin:${PATH}"
@@ -123,13 +123,13 @@ wget -q https://raw.githubusercontent.com/Bo0oM/fuzz.txt/master/fuzz.txt -O $too
 
 # HTTPX
 echo "[*] Installing HTTPX..."
-wget -q https://github.com/projectdiscovery/httpx/releases/download/v1.3.1/httpx_1.3.1_linux_amd64.zip
-unzip -j httpx_1.3.1_linux_amd64.zip -d /usr/bin/ httpx >/dev/null
-rm httpx_1.3.1_linux_amd64.zip
+wget -q https://github.com/projectdiscovery/httpx/releases/download/v1.6.10/httpx_1.6.10_linux_amd64.zip
+unzip -j httpx_1.6.10_linux_amd64.zip -d /usr/bin/ httpx >/dev/null
+rm httpx_1.6.10_linux_amd64.zip
 
 # Amass
 echo "[*] Installing Amass..."
-wget -q https://github.com/owasp-amass/amass/releases/download/v3.23.2/amass_Linux_amd64.zip
+wget -q https://github.com/owasp-amass/amass/releases/download/v4.2.0/amass_Linux_amd64.zip
 unzip -q amass_Linux_amd64.zip
 mv amass_Linux_amd64 amass
 rm amass_Linux_amd64.zip
