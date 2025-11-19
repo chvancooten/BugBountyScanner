@@ -105,6 +105,13 @@ tar xvf phantomjs-2.1.1-linux-x86_64.tar.bz2 >/dev/null
 rm phantomjs-2.1.1-linux-x86_64.tar.bz2
 cp $toolsDir/phantomjs-2.1.1-linux-x86_64/bin/phantomjs /usr/bin/phantomjs
 
+# Unzip (if not installed)
+if ! command -v unzip &> /dev/null
+then
+    echo "[*] Installing unzip..."
+    sudo apt install -y unzip >/dev/null
+fi
+
 # Aquatone
 echo "[*] Installing Aquatone"
 wget -q https://github.com/michenriksen/aquatone/releases/download/v1.7.0/aquatone_linux_amd64_1.7.0.zip
